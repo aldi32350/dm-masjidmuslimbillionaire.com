@@ -99,10 +99,13 @@ function switchView(id,el){
     else { document.querySelectorAll('.nav-link').forEach(n=>{ const t=n.textContent.trim().toLowerCase(); if((id==='tasks'&&t.includes('tugas'))||(id==='users'&&t.includes('personil'))||(id==='dashboard'&&t.includes('dashboard'))) n.classList.add('active'); }); }
     document.querySelectorAll('.app-view').forEach(v=>v.classList.add('hidden'));
     const view=document.getElementById('view-'+id); if(view) view.classList.remove('hidden');
-    document.getElementById('pageTitle').textContent=id==='dashboard'?'Dashboard':id==='tasks'?'Manajemen Tugas':'Manajemen Personil';
+    const titles={dashboard:'Dashboard',tasks:'Manajemen Tugas',users:'Manajemen Personil',eod:'Teks Siap Salin',telegram:'Bot Telegram'};
+    document.getElementById('pageTitle').textContent=titles[id]||'';
     if(id==='dashboard') loadDashboard();
     if(id==='tasks'){ populateAssigneeDropdowns(); setTaskDateFilter('today'); }
     if(id==='users') loadUsers();
+    if(id==='eod' && typeof initEodView==='function') initEodView();
+    if(id==='telegram' && typeof loadTgSettings==='function') loadTgSettings();
     if(window.innerWidth<=768) toggleSidebar();
 }
 
@@ -157,6 +160,7 @@ function loginSuccess(user){
     const isKU = user.role==='Kepala Unit';
     document.getElementById('navUsers').classList.toggle('hidden', !(isKD||isKU));
     document.getElementById('navBackup').classList.toggle('hidden', !isKD);
+    const navTg=document.getElementById('navTelegram'); if(navTg) navTg.classList.toggle('hidden', !isKD);
     document.getElementById('quickPersonil').classList.toggle('hidden', !(isKD||isKU));
     // Scope toggle visibility (only for Kepala Divisi & Kepala Unit)
     document.getElementById('scopeFilterWrap').classList.toggle('hidden', !(isKD||isKU));

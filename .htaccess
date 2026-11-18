@@ -14,7 +14,7 @@
 Options -Indexes
 
 # Protect sensitive files
-<FilesMatch "(config\.php|database\.sql)$">
+<FilesMatch "(config\.php|config_local\.php|configtes\.php|lib\.php|database\.sql|error_log)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

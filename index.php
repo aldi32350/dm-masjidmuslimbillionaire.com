@@ -132,9 +132,11 @@ tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','sans
     <div class="flex-1 px-3 space-y-0.5" id="sidebarNav">
         <button onclick="switchView('dashboard',this)" class="nav-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left"><i class="bi bi-grid-1x2 text-base w-5 text-center"></i>Dashboard</button>
         <button onclick="switchView('tasks',this)" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left"><i class="bi bi-list-task text-base w-5 text-center"></i>Data Tugas</button>
+        <button onclick="switchView('eod',this)" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left" id="navEod"><i class="bi bi-clipboard-check text-base w-5 text-center"></i>Teks Siap Salin</button>
         <button onclick="switchView('users',this)" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left hidden" id="navUsers"><i class="bi bi-people text-base w-5 text-center"></i>Manajemen Personil</button>
         <div class="pt-3 pb-1"><span class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3">Sistem</span></div>
         <button onclick="handleBackup()" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left hidden" id="navBackup"><i class="bi bi-cloud-arrow-up text-base w-5 text-center"></i>Backup Data</button>
+        <button onclick="switchView('telegram',this)" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium text-left hidden" id="navTelegram"><i class="bi bi-telegram text-base w-5 text-center"></i>Bot Telegram</button>
     </div>
     <div class="p-4 mx-3 mb-3 rounded-xl bg-gradient-to-br from-brand-600/20 to-brand-500/10 border border-brand-500/10">
         <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-emerald-400 flex items-center justify-center text-white font-bold text-sm" id="sideAvatar">A</div><div class="min-w-0"><div class="font-semibold text-sm truncate" id="sideName">Admin</div><div class="text-[11px] text-slate-400 truncate" id="sideRole">Kepala Divisi</div></div></div>
@@ -161,6 +163,7 @@ tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','sans
             </button>
             <div id="userMenu" class="hidden absolute right-0 top-12 w-52 bg-white dark:bg-navy-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-1 z-50">
                 <a href="#" onclick="showPasswordModal();document.getElementById('userMenu').classList.add('hidden')" class="flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-navy-900 text-sm transition"><i class="bi bi-key"></i>Ganti Password</a>
+                <a href="#" onclick="showTgLinkModal();document.getElementById('userMenu').classList.add('hidden');return false" class="flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-navy-900 text-sm transition"><i class="bi bi-telegram text-sky-500"></i>Hubungkan Telegram</a>
                 <hr class="border-slate-100 dark:border-slate-700"><a href="#" onclick="handleLogout()" class="flex items-center gap-2 px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 text-sm transition"><i class="bi bi-box-arrow-right"></i>Logout</a>
             </div>
         </div>
@@ -335,6 +338,90 @@ tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','sans
 </div>
 </div>
 
+<!-- ===== VIEW: TEKS SIAP SALIN (EOD) ===== -->
+<div id="view-eod" class="app-view hidden animate-fadeIn">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-5"><div><h4 class="font-bold text-lg">Teks Siap Salin</h4><p class="text-xs text-slate-400">Laporan EOD otomatis dari tugas yang selesai &mdash; tinggal salin &amp; kirim</p></div></div>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+  <div class="lg:col-span-2 glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5 space-y-4">
+    <div id="eodUserWrap"><label class="block text-xs font-semibold text-slate-500 mb-1.5">Personil</label><select id="eodUser" onchange="loadEod(true)" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none"></select></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal</label><input type="date" id="eodDate" onchange="loadEod(false)" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none"></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Unit</label><input type="text" id="eodUnit" oninput="eodChanged()" placeholder="Contoh: Unit DM Sosial Media" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none"></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Target Perpekan <span class="text-[11px] text-slate-400">(1 baris = 1 target)</span></label><textarea id="eodTarget" rows="6" oninput="eodChanged()" placeholder="YouTube Long Video: Upload 2&#10;YouTube Shorts: Upload 5 Shorts" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none resize-y"></textarea>
+      <button type="button" onclick="saveEodTemplate()" class="mt-2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900 transition"><i class="bi bi-bookmark-check mr-1"></i>Simpan Unit &amp; Target sebagai default</button></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Problem</label><textarea id="eodProblem" rows="2" oninput="eodChanged()" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none resize-y"></textarea></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Solusi</label><textarea id="eodSolusi" rows="2" oninput="eodChanged()" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none resize-y"></textarea></div>
+    <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer"><input type="checkbox" id="eodProgress" checked onchange="eodChanged()" class="accent-green-600 w-4 h-4">Sertakan tugas yang sedang diproses</label>
+  </div>
+  <div class="lg:col-span-3 glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5 flex flex-col">
+    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+      <div><h5 class="font-bold text-sm">Pratinjau</h5><p class="text-[11px] text-slate-400" id="eodStats">-</p></div>
+      <div class="flex gap-2"><button type="button" onclick="loadEod(false)" class="px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900 transition" title="Muat ulang dari data tugas"><i class="bi bi-arrow-clockwise"></i></button>
+      <button type="button" onclick="copyEod()" id="btnCopyEod" class="px-4 py-2 text-sm font-semibold bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition"><i class="bi bi-clipboard mr-1"></i>Salin Teks</button></div>
+    </div>
+    <textarea id="eodText" spellcheck="false" class="flex-1 min-h-[420px] w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-900 px-4 py-3 text-[13px] leading-relaxed font-mono focus:border-brand-500 outline-none resize-y"></textarea>
+    <p class="text-[11px] text-slate-400 mt-2"><i class="bi bi-info-circle mr-1"></i>Teks boleh diedit langsung sebelum disalin. "Yang dikerjakan" diambil dari tugas berstatus Selesai pada tanggal tersebut.</p>
+  </div>
+</div>
+</div>
+
+<!-- ===== VIEW: BOT TELEGRAM (Kepala Divisi) ===== -->
+<div id="view-telegram" class="app-view hidden animate-fadeIn">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-5"><div><h4 class="font-bold text-lg">Bot Telegram</h4><p class="text-xs text-slate-400">Kontrol kerja tim lewat Telegram: notifikasi tugas, tombol Mulai/Selesai, pengingat &amp; rekap otomatis</p></div><span id="tgStatusBadge" class="text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-navy-800 text-slate-500">-</span></div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5">
+    <h5 class="font-bold text-sm mb-1">1. Pengaturan Bot</h5>
+    <p class="text-[11px] text-slate-400 mb-4">Buat bot di Telegram lewat <b>@BotFather</b> → <code>/newbot</code>, lalu tempel tokennya di sini.</p>
+    <form onsubmit="saveTgSettings(event)" class="space-y-4">
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Token Bot</label><input type="password" id="tgToken" autocomplete="off" placeholder="123456789:AAH..." class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none"><p class="text-[11px] text-slate-400 mt-1" id="tgTokenInfo"></p></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1.5">Chat ID Grup Tim <span class="text-[11px] text-slate-400">(opsional)</span></label><input type="text" id="tgGroup" placeholder="-1001234567890" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 px-4 py-2.5 text-sm focus:border-brand-500 outline-none"><p class="text-[11px] text-slate-400 mt-1">Tambahkan bot ke grup, lalu ketik <code>/id</code> di grup untuk melihat angkanya.</p></div>
+      <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="tgNotifyAssign" class="accent-green-600 w-4 h-4">Kirim notifikasi ke personil saat diberi tugas baru</label>
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="tgNotifySup" class="accent-green-600 w-4 h-4">Kabari atasan saat anggotanya menyelesaikan tugas</label>
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="tgNotifyGroup" class="accent-green-600 w-4 h-4">Umumkan tugas selesai di grup tim</label>
+      </div>
+      <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition">Simpan Pengaturan</button>
+    </form>
+  </div>
+  <div class="space-y-5">
+    <div class="glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5">
+      <h5 class="font-bold text-sm mb-1">2. Aktifkan Bot</h5>
+      <p class="text-[11px] text-slate-400 mb-3">Pasang webhook supaya bot bisa menerima perintah dari Telegram.</p>
+      <div class="text-xs space-y-1 mb-3" id="tgWebhookInfo"></div>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="setTgWebhook()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-sky-500 text-white hover:bg-sky-600 transition"><i class="bi bi-plug mr-1"></i>Pasang Webhook</button>
+        <button onclick="testTg('me')" class="px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900 transition"><i class="bi bi-send mr-1"></i>Tes ke saya</button>
+        <button onclick="testTg('group')" class="px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900 transition"><i class="bi bi-people mr-1"></i>Tes ke grup</button>
+      </div>
+    </div>
+    <div class="glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5">
+      <h5 class="font-bold text-sm mb-1">3. Pengingat Otomatis</h5>
+      <p class="text-[11px] text-slate-400 mb-3">Di cPanel → <b>Cron Jobs</b>, tambahkan dua perintah ini (contoh: pagi jam 07:00, sore jam 16:30).</p>
+      <div class="space-y-3 text-xs">
+        <div><div class="font-semibold mb-1">🌅 Pagi — daftar tugas tiap orang + briefing grup</div><div class="flex gap-2"><input readonly id="tgCronPagi" class="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-900 px-3 py-2 font-mono text-[11px]"><button onclick="copyField('tgCronPagi')" class="px-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900"><i class="bi bi-clipboard"></i></button></div></div>
+        <div><div class="font-semibold mb-1">🌇 Sore — draf EOD tiap orang + rekap tim di grup</div><div class="flex gap-2"><input readonly id="tgCronSore" class="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-900 px-3 py-2 font-mono text-[11px]"><button onclick="copyField('tgCronSore')" class="px-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-navy-900"><i class="bi bi-clipboard"></i></button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5">
+    <h5 class="font-bold text-sm mb-1">4. Personil Terhubung</h5>
+    <p class="text-[11px] text-slate-400 mb-3">Tiap personil menghubungkan akunnya sendiri lewat menu profil → <b>Hubungkan Telegram</b>.</p>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><tbody id="tgUserTable"></tbody></table></div>
+  </div>
+  <div class="glass rounded-2xl border border-slate-200/60 dark:border-white/[0.06] p-5 text-xs">
+    <h5 class="font-bold text-sm mb-3">Perintah Bot</h5>
+    <div class="grid grid-cols-[auto,1fr] gap-x-3 gap-y-2">
+      <code class="text-brand-600">/tugas</code><span>Daftar tugas yang belum selesai, dengan tombol ▶️ Mulai dan ✅ Selesai</span>
+      <code class="text-brand-600">/selesai ID</code><span>Tandai tugas selesai (ID terlihat di /tugas)</span>
+      <code class="text-brand-600">/eod</code><span>Teks laporan EOD hari ini, siap salin</span>
+      <code class="text-brand-600">/terlambat</code><span>Tugas yang lewat deadline</span>
+      <code class="text-brand-600">/tim</code><span>Ringkasan kerja tim hari ini (Kepala)</span>
+      <code class="text-brand-600">/baru</code><span>Beri tugas: <code>/baru Rahmat | Upload 2 Shorts | 2026-11-20</code> (Kepala)</span>
+      <code class="text-brand-600">/id</code><span>Lihat Chat ID grup/pribadi</span>
+    </div>
+  </div>
+</div>
+</div>
+
 </div></div></div>
 
 <!-- ===== MODALS ===== -->
@@ -422,5 +509,13 @@ Optimasi workflow harian"></textarea></div>
 <div class="flex justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-700"><button type="button" onclick="closeModal('goalModal')" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-navy-900 transition">Batal</button><button type="submit" id="btnSaveGoal" class="px-5 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 hover:shadow-lg transition">Simpan</button></div>
 </form></div></div>
 
-<script src="app.js"></script>
+<!-- Telegram Link Modal -->
+<div id="tgLinkModal" class="hidden modal-backdrop fixed inset-0 z-[1050] flex items-center justify-center p-4">
+<div class="bg-white dark:bg-navy-800 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-slate-700 animate-slideUp">
+<div class="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700"><h5 class="font-bold"><i class="bi bi-telegram text-sky-500 mr-1"></i>Hubungkan Telegram</h5><button type="button" onclick="closeModal('tgLinkModal')" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-navy-900 flex items-center justify-center text-slate-400 transition">&times;</button></div>
+<div class="p-5 text-sm space-y-4" id="tgLinkBody"></div>
+</div></div>
+
+<script src="app.js?v=3.4"></script>
+<script src="fitur.js?v=3.4"></script>
 </body></html>

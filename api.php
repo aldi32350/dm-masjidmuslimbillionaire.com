@@ -6,6 +6,8 @@
 // ==============================================================================
 
 require_once 'config.php';
+require_once 'lib.php';
+try { runFeatureMigrations(); } catch (Exception $e) { /* DB belum siap */ }
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -250,6 +252,7 @@ switch ($action) {
             $stmt = $db->prepare("INSERT INTO tasks (task_id, judul, deskripsi, tipe, assignee, prioritas, batas_waktu, status, waktu_mulai, urutan, tgl_dibuat) VALUES (?,?,?,?,?,?,?,?,?,?,NOW())");
             $stmt->execute([$newId, $judul, $deskripsi, $tipe, $assignee, $prioritas, $batasWaktu, $status, $waktuMulai, $maxUrutan]);
             logActivity($cur['nama'], 'TAMBAH TUGAS', 'Menambah tugas: ' . $judul);
+            notifyTaskAssigned($newId, $cur['nama']);
             jsonResponse(['success' => true, 'message' => 'Tugas berhasil ditambahkan!']);
         } else {
             $stmt = $db->prepare("SELECT * FROM tasks WHERE task_id = ?");
@@ -296,6 +299,8 @@ switch ($action) {
             $stmt = $db->prepare("UPDATE tasks SET judul=?, deskripsi=?, tipe=?, assignee=?, prioritas=?, batas_waktu=?, status=?, waktu_mulai=?, durasi_kerja=?, tgl_selesai=? WHERE task_id=?");
             $stmt->execute([$judul, $deskripsi, $tipe, $assignee, $prioritas, $batasWaktu, $status, $waktuMulai, $durasiKerja, $tglSelesai, $taskId]);
             logActivity($cur['nama'], 'UPDATE TUGAS', 'Memperbarui tugas: ' . $judul);
+            if ($assignee !== $existing['assignee']) notifyTaskAssigned($taskId, $cur['nama']);
+            if ($status === 'Selesai' && $existing['status'] !== 'Selesai') notifyTaskStatus($taskId, 'Selesai', $cur['nama']);
             jsonResponse(['success' => true, 'message' => 'Tugas berhasil diperbarui!']);
         }
         break;
@@ -328,42 +333,145 @@ switch ($action) {
         $stmt->execute([$taskId]);
         $task = $stmt->fetch();
         if (!$task) jsonResponse(['success' => false, 'message' => 'Tugas tidak ditemukan.']);
-        $visibleNames = getVisibleNames($cur);
-        if ($visibleNames !== null && !in_array($task['assignee'], $visibleNames)) {
-            jsonResponse(['success' => false, 'message' => 'Anda tidak memiliki akses untuk mengubah status tugas ini!']);
-        }
+        $res = applyTaskStatus($task, $newStatus, $cur);
+        if ($res['success'] && $task['status'] !== $newStatus) notifyTaskStatus($taskId, $newStatus, $cur['nama']);
+        jsonResponse($res);
+        break;
 
-        // === VALIDASI FASE SATU ARAH ===
-        $statusOrder = ['Belum Dimulai' => 0, 'Sedang Diproses' => 1, 'Selesai' => 2];
-        $oldLevel = $statusOrder[$task['status']] ?? 0;
-        $newLevel = $statusOrder[$newStatus] ?? 0;
-        if ($newLevel < $oldLevel && $cur['role'] !== 'Kepala Divisi') {
-            jsonResponse(['success' => false, 'message' => 'Tugas tidak bisa dikembalikan ke fase sebelumnya. Hanya Kepala Divisi yang dapat memundurkan status.']);
-        }
+    // =================== TEKS SIAP SALIN (EOD) ===================
+    case 'eod_get':
+        if (!isLoggedIn()) jsonResponse(['success' => false, 'message' => 'Belum login']);
+        $cur = getSessionUser();
+        $target = getUserRowById($_POST['user_db_id'] ?? $cur['db_id']);
+        if (!canAccessUser($cur, $target)) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
+        if (!validDate($tanggal)) $tanggal = date('Y-m-d');
+        $opts = [
+            'problem' => $_POST['problem'] ?? '',
+            'solusi' => $_POST['solusi'] ?? '',
+            'include_progress' => ($_POST['include_progress'] ?? '1') === '1',
+        ];
+        if (isset($_POST['unit'])) $opts['unit'] = $_POST['unit'];
+        if (isset($_POST['target'])) $opts['target'] = $_POST['target'];
+        $eod = buildEodText($target, $tanggal, $opts);
+        $eod['saved_unit'] = plain($target['eod_unit'] ?: ($target['posisi'] ?? ''));
+        $eod['saved_target'] = implode("\n", getEodTargets($target, $tanggal));
+        jsonResponse(['success' => true, 'data' => $eod]);
+        break;
 
-        $tglSelesai = null;
-        $waktuMulai = $task['waktu_mulai'] ?? null;
-        $durasiKerja = $task['durasi_kerja'] ?? null;
+    case 'eod_save_template':
+        if (!isLoggedIn()) jsonResponse(['success' => false, 'message' => 'Belum login']);
+        $cur = getSessionUser();
+        $target = getUserRowById($_POST['user_db_id'] ?? $cur['db_id']);
+        if (!canAccessUser($cur, $target)) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        $unit = mb_substr(trim($_POST['unit'] ?? ''), 0, 150);
+        $tgt = implode("\n", cleanListLines($_POST['target'] ?? ''));
+        getDB()->prepare("UPDATE users SET eod_unit = ?, eod_target = ? WHERE id = ?")->execute([$unit, $tgt, $target['id']]);
+        logActivity($cur['nama'], 'UPDATE TEMPLATE EOD', 'Template EOD: ' . $target['nama_lengkap']);
+        jsonResponse(['success' => true, 'message' => 'Unit & target perpekan disimpan!']);
+        break;
 
-        // Duration tracking
-        if ($newStatus === 'Sedang Diproses' && $task['status'] !== 'Sedang Diproses') {
-            $waktuMulai = date('Y-m-d H:i:s');
-            $durasiKerja = null;
+    // =================== TELEGRAM: PER USER ===================
+    case 'tg_link_info':
+        if (!isLoggedIn()) jsonResponse(['success' => false, 'message' => 'Belum login']);
+        $cur = getSessionUser();
+        $row = getUserRowById($cur['db_id']);
+        if (!tgEnabled()) jsonResponse(['success' => true, 'enabled' => false]);
+        $code = $row['telegram_link_code'];
+        if (!$code || ($_POST['regenerate'] ?? '') === '1') {
+            $code = strtoupper(randomToken(8));
+            getDB()->prepare("UPDATE users SET telegram_link_code = ? WHERE id = ?")->execute([$code, $row['id']]);
         }
-        if ($newStatus === 'Selesai') {
-            $tglSelesai = date('Y-m-d H:i:s');
-            if ($waktuMulai) {
-                $durasiKerja = strtotime($tglSelesai) - strtotime($waktuMulai);
-            }
-        }
-        if ($newStatus === 'Belum Dimulai') {
-            $waktuMulai = null;
-            $durasiKerja = null;
-        }
+        jsonResponse(['success' => true, 'enabled' => true, 'linked' => !empty($row['telegram_chat_id']),
+            'code' => $code, 'bot_username' => getSetting('tg_bot_username', '')]);
+        break;
 
-        $db->prepare("UPDATE tasks SET status=?, waktu_mulai=?, durasi_kerja=?, tgl_selesai=? WHERE task_id=?")->execute([$newStatus, $waktuMulai, $durasiKerja, $tglSelesai, $taskId]);
-        logActivity($cur['nama'], 'UPDATE STATUS', 'Status "' . $task['judul'] . '" → ' . $newStatus);
-        jsonResponse(['success' => true, 'message' => 'Status berhasil diubah!']);
+    case 'tg_unlink':
+        if (!isLoggedIn()) jsonResponse(['success' => false, 'message' => 'Belum login']);
+        $cur = getSessionUser();
+        $targetId = (int)($_POST['user_db_id'] ?? $cur['db_id']);
+        if ($targetId !== (int)$cur['db_id'] && !isKepalaDivisi()) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        getDB()->prepare("UPDATE users SET telegram_chat_id = NULL, telegram_link_code = NULL WHERE id = ?")->execute([$targetId]);
+        logActivity($cur['nama'], 'TELEGRAM', 'Memutus sambungan Telegram user #' . $targetId);
+        jsonResponse(['success' => true, 'message' => 'Sambungan Telegram diputus.']);
+        break;
+
+    // =================== TELEGRAM: ADMIN (Kepala Divisi) ===================
+    case 'tg_get_settings':
+        if (!isKepalaDivisi()) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        if (getSetting('tg_cron_key', '') === '') setSetting('tg_cron_key', randomToken(24));
+        $token = tgToken();
+        $users = getDB()->query("SELECT id, nama_lengkap, role, posisi, status, telegram_chat_id IS NOT NULL AS linked FROM users ORDER BY nama_lengkap")->fetchAll();
+        $info = null;
+        if ($token !== '') {
+            $wh = tgApi('getWebhookInfo', [], 5);
+            $info = $wh['ok'] ? ['url' => $wh['result']['url'] ?? '', 'pending' => $wh['result']['pending_update_count'] ?? 0,
+                'last_error' => $wh['result']['last_error_message'] ?? ''] : ['error' => $wh['description'] ?? 'Gagal'];
+        }
+        $base = appBaseUrl() . '/telegram.php?cron=' . getSetting('tg_cron_key');
+        jsonResponse(['success' => true, 'data' => [
+            'has_token' => $token !== '',
+            'token_masked' => $token !== '' ? substr($token, 0, strpos($token, ':') ?: 4) . ':••••••' . substr($token, -4) : '',
+            'bot_username' => getSetting('tg_bot_username', ''),
+            'group_chat_id' => getSetting('tg_group_chat_id', ''),
+            'notify_assign' => getSetting('tg_notify_assign', '1') === '1',
+            'notify_done_supervisor' => getSetting('tg_notify_done_supervisor', '1') === '1',
+            'notify_done_group' => getSetting('tg_notify_done_group', '0') === '1',
+            'webhook' => $info,
+            'webhook_target' => appBaseUrl() . '/telegram.php',
+            'cron_pagi' => $base . '&job=pagi',
+            'cron_sore' => $base . '&job=sore',
+            'users' => $users,
+        ]]);
+        break;
+
+    case 'tg_save_settings':
+        if (!isKepalaDivisi()) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        $cur = getSessionUser();
+        $newToken = trim($_POST['bot_token'] ?? '');
+        if ($newToken !== '') {
+            if (!preg_match('/^\d{5,}:[A-Za-z0-9_-]{30,}$/', $newToken)) jsonResponse(['success' => false, 'message' => 'Format token bot tidak valid. Contoh: 123456789:AAH...']);
+            setSetting('tg_bot_token', $newToken);
+            $me = tgApi('getMe');
+            if (!$me['ok']) { setSetting('tg_bot_token', ''); jsonResponse(['success' => false, 'message' => 'Token ditolak Telegram: ' . ($me['description'] ?? '')]); }
+            setSetting('tg_bot_username', $me['result']['username'] ?? '');
+        }
+        $group = trim($_POST['group_chat_id'] ?? '');
+        if ($group !== '' && !preg_match('/^-?\d+$/', $group)) jsonResponse(['success' => false, 'message' => 'Chat ID grup harus berupa angka (contoh: -1001234567890).']);
+        setSetting('tg_group_chat_id', $group);
+        foreach (['notify_assign', 'notify_done_supervisor', 'notify_done_group'] as $k) setSetting('tg_' . $k, ($_POST[$k] ?? '0') === '1' ? '1' : '0');
+        logActivity($cur['nama'], 'TELEGRAM', 'Pengaturan bot Telegram diperbarui');
+        jsonResponse(['success' => true, 'message' => 'Pengaturan bot tersimpan!']);
+        break;
+
+    case 'tg_set_webhook':
+        if (!isKepalaDivisi()) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        if (!tgEnabled()) jsonResponse(['success' => false, 'message' => 'Isi token bot terlebih dahulu.']);
+        if (getSetting('tg_webhook_secret', '') === '') setSetting('tg_webhook_secret', randomToken(32));
+        $url = appBaseUrl() . '/telegram.php';
+        if (strpos($url, 'https://') !== 0) jsonResponse(['success' => false, 'message' => 'Webhook Telegram wajib HTTPS. Buka aplikasi lewat https:// lalu coba lagi.']);
+        $r = tgApi('setWebhook', ['url' => $url, 'secret_token' => getSetting('tg_webhook_secret'),
+            'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => true]);
+        if (!$r['ok']) jsonResponse(['success' => false, 'message' => 'Gagal memasang webhook: ' . ($r['description'] ?? '')]);
+        tgApi('setMyCommands', ['commands' => [
+            ['command' => 'tugas', 'description' => 'Daftar tugas saya yang belum selesai'],
+            ['command' => 'eod', 'description' => 'Teks laporan EOD hari ini'],
+            ['command' => 'tim', 'description' => 'Ringkasan kerja tim (Kepala)'],
+            ['command' => 'terlambat', 'description' => 'Tugas yang lewat deadline'],
+            ['command' => 'baru', 'description' => 'Beri tugas: /baru Nama | Judul | YYYY-MM-DD'],
+            ['command' => 'bantuan', 'description' => 'Daftar perintah'],
+        ]]);
+        logActivity(getSessionUser()['nama'], 'TELEGRAM', 'Webhook bot dipasang: ' . $url);
+        jsonResponse(['success' => true, 'message' => 'Webhook terpasang! Bot siap menerima perintah.']);
+        break;
+
+    case 'tg_test':
+        if (!isKepalaDivisi()) jsonResponse(['success' => false, 'message' => 'Akses ditolak']);
+        $cur = getSessionUser();
+        $to = ($_POST['to'] ?? 'me') === 'group' ? getSetting('tg_group_chat_id', '') : (getUserRowById($cur['db_id'])['telegram_chat_id'] ?? '');
+        if (!$to) jsonResponse(['success' => false, 'message' => ($_POST['to'] ?? '') === 'group' ? 'Chat ID grup belum diisi.' : 'Akun Anda belum terhubung ke Telegram.']);
+        $r = tgSend($to, "🔔 <b>Tes dari TaskFlow Pro</b>\nBot sudah tersambung dengan benar. Dikirim oleh " . tgEsc($cur['nama']) . ".");
+        jsonResponse($r['ok'] ? ['success' => true, 'message' => 'Pesan tes terkirim!'] : ['success' => false, 'message' => 'Gagal kirim: ' . ($r['description'] ?? '')]);
         break;
 
     // =================== PERSONNEL MANAGEMENT ===================
