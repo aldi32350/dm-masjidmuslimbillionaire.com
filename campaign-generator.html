@@ -1,0 +1,2104 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campaign Page Generator — Donasi Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Nunito:wght@400;600;700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #e2e8f0;
+      --sidebar-border: #1e293b;
+      --sidebar-input-bg: #1e293b;
+      --sidebar-input-border: #334155;
+      --sidebar-accent: #38bdf8;
+      --sidebar-accent-hover: #7dd3fc;
+      --sidebar-section-bg: #1a2332;
+      --sidebar-width: 420px;
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    /* ── LAYOUT ── */
+    .app-layout {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--sidebar-border);
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--sidebar-border);
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      flex-shrink: 0;
+    }
+    .sidebar-header h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-header h1 span { font-size: 1.3rem; }
+    .sidebar-header p {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 100px;
+    }
+    .sidebar-scroll::-webkit-scrollbar { width: 5px; }
+    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
+
+    /* Section */
+    .section {
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--sidebar-accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--sidebar-border);
+    }
+
+    /* Form */
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    .field input[type="text"],
+    .field input[type="url"],
+    .field textarea {
+      width: 100%;
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      padding: 9px 12px;
+      border-radius: 6px;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--sidebar-accent);
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 60px;
+      line-height: 1.5;
+    }
+    .field select {
+      width: 100%;
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      padding: 9px 12px;
+      border-radius: 6px;
+      transition: border-color 0.15s;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+    .field select:focus { border-color: var(--sidebar-accent); }
+    .field select option { background: #1e293b; color: #e2e8f0; }
+
+    /* Rich Text Editor */
+    .rte-wrap {
+      border: 1px solid var(--sidebar-input-border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--sidebar-input-bg);
+    }
+    .rte-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      padding: 6px 8px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--sidebar-input-border);
+      align-items: center;
+    }
+    .rte-toolbar .sep {
+      width: 1px;
+      height: 20px;
+      background: var(--sidebar-input-border);
+      margin: 0 4px;
+    }
+    .rte-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      width: 30px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: 'Inter', serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s;
+    }
+    .rte-btn:hover { background: #334155; color: #e2e8f0; }
+    .rte-btn.active { background: var(--sidebar-accent); color: #0f172a; }
+    .rte-select {
+      background: #0f172a;
+      border: 1px solid var(--sidebar-input-border);
+      color: #94a3b8;
+      font-size: 0.68rem;
+      font-family: 'Inter', sans-serif;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      height: 28px;
+      outline: none;
+    }
+    .rte-select:focus { border-color: var(--sidebar-accent); }
+    .rte-select option { background: #0f172a; color: #e2e8f0; }
+    .rte-color-input {
+      width: 28px;
+      height: 24px;
+      border: 1px solid var(--sidebar-input-border);
+      border-radius: 4px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+    .rte-color-input::-webkit-color-swatch-wrapper { padding: 1px; }
+    .rte-color-input::-webkit-color-swatch { border: none; border-radius: 2px; }
+    .rte-body {
+      min-height: 320px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 12px 14px;
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .rte-body::-webkit-scrollbar { width: 5px; }
+    .rte-body::-webkit-scrollbar-track { background: transparent; }
+    .rte-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
+    .rte-body h2, .rte-body h3 { color: #fff; margin: 8px 0 6px; }
+    .rte-body p { margin-bottom: 6px; }
+    .rte-body img { max-width: 100%; border-radius: 8px; margin: 8px 0; display: block; }
+    .rte-body ul, .rte-body ol { padding-left: 18px; margin: 6px 0; }
+    .rte-body li { margin-bottom: 3px; }
+
+    /* Color picker */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .color-row label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      min-width: 110px;
+      margin-bottom: 0;
+    }
+    .color-row input[type="color"] {
+      width: 34px;
+      height: 28px;
+      border: 2px solid var(--sidebar-input-border);
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      padding: 1px;
+    }
+    .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 1px; }
+    .color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+    .color-row .hex-val {
+      font-size: 0.7rem;
+      color: #64748b;
+      font-family: monospace;
+      min-width: 65px;
+    }
+
+    /* Action buttons */
+    .sidebar-actions {
+      position: sticky;
+      bottom: 0;
+      padding: 14px 20px;
+      background: linear-gradient(to top, var(--sidebar-bg) 70%, transparent);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--sidebar-border);
+    }
+    .btn-action {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-download {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+    }
+    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+    .btn-copy {
+      background: var(--sidebar-input-bg);
+      color: var(--sidebar-text);
+      border: 1px solid var(--sidebar-input-border);
+    }
+    .btn-copy:hover { background: #334155; }
+    .btn-reset {
+      flex: 0 0 auto;
+      padding: 11px 14px;
+      background: transparent;
+      color: #ef4444;
+      border: 1px solid #7f1d1d;
+    }
+    .btn-reset:hover { background: #7f1d1d33; }
+    .btn-import {
+      flex: 0 0 auto;
+      padding: 11px 14px;
+      background: var(--sidebar-input-bg);
+      color: var(--sidebar-accent);
+      border: 1px solid var(--sidebar-input-border);
+    }
+    .btn-import:hover { background: #334155; }
+
+    /* ── RENAME MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      width: 360px;
+      max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+    .modal-subtitle {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+    .modal-input-wrap {
+      display: flex;
+      align-items: center;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+    .modal-input-wrap:focus-within { border-color: var(--sidebar-accent); }
+    .modal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      padding: 10px 12px;
+    }
+    .modal-ext {
+      padding: 10px 12px 10px 0;
+      font-size: 0.8rem;
+      color: #475569;
+      font-family: monospace;
+      user-select: none;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .modal-btn {
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .modal-btn-cancel { background: #334155; color: #94a3b8; }
+    .modal-btn-cancel:hover { background: #475569; }
+    .modal-btn-ok { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+    .modal-btn-ok:hover { filter: brightness(1.1); }
+
+    /* ── PREVIEW AREA ── */
+    .preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1e293b;
+      overflow: hidden;
+    }
+    .preview-toolbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--sidebar-border);
+    }
+    .preview-toolbar .device-btn {
+      background: var(--sidebar-input-bg);
+      color: #94a3b8;
+      border: 1px solid var(--sidebar-input-border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preview-toolbar .device-btn.active {
+      background: var(--sidebar-accent);
+      color: #0f172a;
+      border-color: var(--sidebar-accent);
+    }
+    .preview-toolbar .device-btn:hover:not(.active) { background: #334155; color: #e2e8f0; }
+
+    .preview-frame-wrap {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+      overflow: auto;
+    }
+    .preview-frame-wrap iframe {
+      background: #fff;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #22c55e;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Collapsible */
+    .collapse-toggle {
+      width: 100%;
+      background: var(--sidebar-section-bg);
+      border: 1px solid var(--sidebar-border);
+      color: var(--sidebar-text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      transition: background 0.15s;
+    }
+    .collapse-toggle:hover { background: #1e293b; }
+    .collapse-toggle .arrow { transition: transform 0.2s; font-size: 0.7rem; }
+    .collapse-toggle.open .arrow { transform: rotate(180deg); }
+    .collapse-body {
+      display: none;
+      padding: 4px 0 8px;
+    }
+    .collapse-body.open { display: block; }
+
+    /* Emoji CTA picker */
+    .emoji-pick-btn {
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.1s;
+      line-height: 1.4;
+    }
+    .emoji-pick-btn:hover { background: #334155; border-color: #475569; }
+    .emoji-pick-btn.active { background: var(--sidebar-accent); border-color: var(--sidebar-accent); color: #0f172a; }
+    .emoji-pick-btn.no-emoji { font-size: 0.7rem; padding: 4px 8px; color: #94a3b8; }
+    .emoji-pick-btn.no-emoji.active { color: #0f172a; }
+
+    /* Nominal list rows */
+    .nominal-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      animation: fadeInRow 0.2s ease;
+    }
+    @keyframes fadeInRow { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    .nominal-row input[type="number"] {
+      flex: 1;
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      padding: 8px 10px;
+      border-radius: 6px;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .nominal-row input[type="number"]::-webkit-outer-spin-button,
+    .nominal-row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .nominal-row input[type="number"]:focus { border-color: var(--sidebar-accent); }
+    .nominal-row .emoji-sel {
+      width: 40px;
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #e2e8f0;
+      font-size: 1rem;
+      padding: 6px 4px;
+      border-radius: 6px;
+      text-align: center;
+      outline: none;
+      cursor: pointer;
+    }
+    .nominal-row .emoji-sel:focus { border-color: var(--sidebar-accent); }
+    .nominal-row input[type="text"].sub-label {
+      width: 90px;
+      flex: 0 0 90px;
+      background: var(--sidebar-input-bg);
+      border: 1px solid var(--sidebar-input-border);
+      color: #94a3b8;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.68rem;
+      padding: 8px 8px;
+      border-radius: 6px;
+      outline: none;
+    }
+    .nominal-row input[type="text"].sub-label:focus { border-color: var(--sidebar-accent); }
+    .nominal-row .btn-del-nom {
+      background: transparent;
+      border: 1px solid #7f1d1d;
+      color: #ef4444;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .nominal-row .btn-del-nom:hover { background: #7f1d1d33; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .app-layout { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        min-width: unset;
+        max-height: 50vh;
+      }
+      .preview-area { min-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1><span>🛠️</span> Campaign Builder</h1>
+      <p>Edit template donasi & download HTML siap pakai</p>
+    </div>
+
+    <div class="sidebar-scroll">
+
+      <!-- ── STYLE TEMPLATE ── -->
+      <div class="section">
+        <div class="section-title">🖼 Style Halaman</div>
+        <div class="field">
+          <label>Pilih Style Halaman</label>
+          <select id="inp-template">
+            <option value="mmb">MMB Default</option>
+            <option value="kitabisa">Style Kitabisa</option>
+            <option value="checkout">Scalev Checkout (Layer 2)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── WARNA ── -->
+      <div class="section">
+        <div class="section-title">🎨 Warna</div>
+
+        <div class="color-row">
+          <label>Tombol Utama</label>
+          <input type="color" data-var="green" value="#22c55e" />
+          <span class="hex-val">#22c55e</span>
+        </div>
+        <div class="color-row">
+          <label>Tombol Hover</label>
+          <input type="color" data-var="green-dark" value="#16a34a" />
+          <span class="hex-val">#16a34a</span>
+        </div>
+        <div class="color-row">
+          <label>Aksen Hijau</label>
+          <input type="color" data-var="green-light" value="#dcfce7" />
+          <span class="hex-val">#dcfce7</span>
+        </div>
+        <div class="color-row">
+          <label>Teks Utama</label>
+          <input type="color" data-var="text" value="#111827" />
+          <span class="hex-val">#111827</span>
+        </div>
+        <div class="color-row">
+          <label>Teks Sekunder</label>
+          <input type="color" data-var="muted" value="#6b7280" />
+          <span class="hex-val">#6b7280</span>
+        </div>
+        <div class="color-row">
+          <label>Background</label>
+          <input type="color" data-var="bg" value="#f9fafb" />
+          <span class="hex-val">#f9fafb</span>
+        </div>
+        <div class="color-row">
+          <label>Border</label>
+          <input type="color" data-var="border" value="#e5e7eb" />
+          <span class="hex-val">#e5e7eb</span>
+        </div>
+      </div>
+
+      <!-- ── GAMBAR ── -->
+      <div class="section">
+        <div class="section-title">🖼️ Gambar</div>
+        <div class="field">
+          <label>Hero Image (URL)</label>
+          <input type="url" id="inp-hero-img" value="https://cdn.scalev.id/uploads/1779183716/oA9P4I5o6mv4bJW7HeOAYA/1779183716741-WhatsApp-Image-2025-12-30-at-11.29.12.webp" />
+        </div>
+        <div class="field">
+          <label>Logo Penggalang Dana (URL) — kosongkan untuk emoji default</label>
+          <input type="url" id="inp-avatar-img" value="https://cdn.scalev.id/uploads/1779346627/d0Qgpb1hgI8L1LZrhLmtQw/1779346626439-Masjid-Muslim-Billionaire-02.webp" />
+        </div>
+      </div>
+
+      <!-- ── HEADER & CTA ── -->
+      <div class="section">
+        <div class="section-title">📝 Header & Tombol</div>
+        <div class="field">
+          <label>Lokasi — kosongkan untuk menghilangkan</label>
+          <input type="text" id="inp-location" value="Bogor, Jawa Barat" />
+        </div>
+        <div class="field">
+          <label>Judul Kampanye</label>
+          <textarea id="inp-title" rows="2">Bersama Kita Peduli: Sedekah untuk Santri Yatim, Dhuafa, dan Para Penghafal Al Quran</textarea>
+        </div>
+        <div class="field">
+          <label>Teks Tombol CTA</label>
+          <input type="text" id="inp-cta-text" value="Sedekah Sekarang" />
+        </div>
+        <div class="field">
+          <label>Emoji / Ikon Tombol CTA</label>
+          <div id="cta-emoji-picker" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;">
+            <button class="emoji-pick-btn no-emoji active" data-emoji="" title="Tanpa emoji">Tanpa</button>
+            <button class="emoji-pick-btn" data-emoji="🤲" title="Tangan berdoa">🤲</button>
+            <button class="emoji-pick-btn" data-emoji="❤️" title="Hati merah">❤️</button>
+            <button class="emoji-pick-btn" data-emoji="💚" title="Hati hijau">💚</button>
+            <button class="emoji-pick-btn" data-emoji="🌟" title="Bintang">🌟</button>
+            <button class="emoji-pick-btn" data-emoji="✨" title="Berkilau">✨</button>
+            <button class="emoji-pick-btn" data-emoji="🕌" title="Masjid">🕌</button>
+            <button class="emoji-pick-btn" data-emoji="📖" title="Al-Quran">📖</button>
+            <button class="emoji-pick-btn" data-emoji="🙏" title="Berdoa">🙏</button>
+            <button class="emoji-pick-btn" data-emoji="💰" title="Uang">💰</button>
+            <button class="emoji-pick-btn" data-emoji="🎁" title="Hadiah">🎁</button>
+            <button class="emoji-pick-btn" data-emoji="🫶" title="Cinta">🫶</button>
+            <button class="emoji-pick-btn" data-emoji="⚡" title="Kilat">⚡</button>
+            <button class="emoji-pick-btn" data-emoji="🔥" title="Api">🔥</button>
+          </div>
+          <input type="hidden" id="inp-cta-emoji" value="" />
+        </div>
+        <div class="field">
+          <label>Link Tombol (URL Donasi)</label>
+          <input type="url" id="inp-cta-url" value="https://masjidmuslimbillionaire.id/program-bbhq-atc-fhs" />
+        </div>
+      </div>
+
+      <!-- ── CHECKOUT SETTINGS ── -->
+      <div class="section" id="section-checkout" style="display:none;">
+        <div class="section-title">🛒 Pengaturan Checkout</div>
+        <div class="field">
+          <label>Headline Checkout</label>
+          <textarea id="inp-checkout-headline" rows="2">Infaq Pembebasan Lahan dan Pembangunan Kawasan Masjid Jalan Cahaya</textarea>
+        </div>
+        <div class="field">
+          <label>URL Tombol Back (kosongkan untuk history.back)</label>
+          <input type="text" id="inp-back-url" value="" placeholder="javascript:history.back()" />
+        </div>
+        <div class="field">
+          <label>Gambar Thumbnail Kampanye (URL)</label>
+          <input type="url" id="inp-checkout-thumb" value="https://cdn.scalev.id/uploads/1779183716/oA9P4I5o6mv4bJW7HeOAYA/1779183716741-WhatsApp-Image-2025-12-30-at-11.29.12.webp" />
+        </div>
+        <div class="field">
+          <label>Daftar Nominal Donasi</label>
+          <div id="nominal-list-container"></div>
+          <button type="button" class="btn-action btn-copy" onclick="addNominalRow()" style="margin-top:8px;width:100%;justify-content:center;">
+            ➕ Tambah Nominal
+          </button>
+        </div>
+      </div>
+
+      <!-- ── DATA DONASI KITABISA ── -->
+      <div class="section" id="section-kitabisa" style="display:none;">
+        <div class="section-title">📊 Data Donasi (Khusus Kitabisa)</div>
+        <div class="field">
+          <label>Target Donasi (Rp)</label>
+          <input type="text" id="inp-target-donasi" value="500000000" placeholder="contoh: 500000000" />
+        </div>
+        <div class="field">
+          <label>Dana Terkumpul (Rp)</label>
+          <input type="text" id="inp-dana-terkumpul" value="300000000" placeholder="contoh: 300000000" />
+        </div>
+        <div class="field">
+          <label>Jumlah Donatur</label>
+          <input type="text" id="inp-jumlah-donatur" value="1.234" placeholder="contoh: 1.234" />
+        </div>
+      </div>
+
+      <!-- ── PENGGALANG DANA ── -->
+      <div class="section">
+        <div class="section-title">👤 Penggalang Dana</div>
+        <div class="field">
+          <label>Nama Organisasi</label>
+          <input type="text" id="inp-fund-name" value="Berkahi Indonesia" />
+        </div>
+        <div class="field">
+          <label>Link Organisasi</label>
+          <input type="url" id="inp-fund-link" value="#" />
+        </div>
+        <div class="field">
+          <label>Teks Verified</label>
+          <input type="text" id="inp-fund-verified" value="Verified Organization" />
+        </div>
+      </div>
+
+      <!-- ── NARASI / COPYWRITING ── -->
+      <div class="section">
+        <div class="section-title">✍️ Narasi / Copywriting</div>
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+          <p style="font-size:0.7rem;color:#94a3b8;line-height:1.5;margin:0;">💡 <strong>Tips:</strong> Ketik atau paste copywriting Anda langsung di editor di bawah. Gunakan toolbar untuk format teks. Klik 🖼️ untuk menyisipkan gambar dari URL.</p>
+        </div>
+        <div class="rte-wrap">
+          <div class="rte-toolbar">
+            <select class="rte-select" id="rteFont" title="Font">
+              <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+              <option value="Inter">Inter</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Open Sans">Open Sans</option>
+              <option value="Lato">Lato</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Montserrat">Montserrat</option>
+            </select>
+            <select class="rte-select" id="rteFontSize" title="Ukuran">
+              <option value="1">Kecil</option>
+              <option value="3" selected>Normal</option>
+              <option value="5">Besar</option>
+              <option value="7">Sangat Besar</option>
+            </select>
+            <div class="sep"></div>
+            <button class="rte-btn" id="rteBold" title="Bold (Ctrl+B)"><b>B</b></button>
+            <button class="rte-btn" id="rteItalic" title="Italic (Ctrl+I)"><i>I</i></button>
+            <button class="rte-btn" id="rteUnderline" title="Underline (Ctrl+U)"><u>U</u></button>
+            <div class="sep"></div>
+            <input type="color" class="rte-color-input" id="rteColor" value="#374151" title="Warna Teks" />
+            <input type="color" class="rte-color-input" id="rteBgColor" value="#fefce8" title="Highlight Teks" />
+            <button class="rte-btn" id="rteClearBg" title="Hapus Highlight dari teks terpilih" style="font-size:0.65rem;color:#f87171;width:36px;">✕HL</button>
+            <div class="sep"></div>
+            <select class="rte-select" id="rteHeading" title="Heading">
+              <option value="">Paragraf</option>
+              <option value="h2">Heading 2</option>
+              <option value="h3">Heading 3</option>
+            </select>
+            <button class="rte-btn" id="rteUL" title="Bullet List">•</button>
+            <button class="rte-btn" id="rteOL" title="Numbered List" style="font-size:0.75rem;font-weight:700;">1.</button>
+            <div class="sep"></div>
+            <button class="rte-btn" id="rteImg" title="Sisipkan Gambar" style="font-size:0.9rem;">🖼️</button>
+            <button class="rte-btn" id="rteInsertBox" title="Sisipkan Kotak Langkah (Steps Box)" style="font-size:0.85rem;">📋</button>
+            <button class="rte-btn" id="rteUndo" title="Undo">↩</button>
+            <button class="rte-btn" id="rteRedo" title="Redo">↪</button>
+          </div>
+          <div class="rte-body" contenteditable="true" id="rteEditor"></div>
+        </div>
+      </div>
+
+      <!-- ── META ── -->
+      <div class="section">
+        <div class="section-title">⚙️ Meta</div>
+        <div class="field">
+          <label>Page Title (tab browser)</label>
+          <input type="text" id="inp-page-title" value="Bersama Kita Peduli: Sedekah untuk Santri Yatim, Dhuafa, dan Para Penghafal Al Quran" />
+        </div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+
+    <div class="sidebar-actions">
+      <input type="file" id="inp-import" accept=".html" style="display:none;" onchange="handleImport(event)">
+      <button class="btn-action btn-import" onclick="document.getElementById('inp-import').click()" title="Load file HTML yang pernah di-download">📂</button>
+      <button class="btn-action btn-download" onclick="downloadHTML()">⬇ Download</button>
+      <button class="btn-action btn-copy" onclick="copyHTML()">📋 Copy</button>
+      <button class="btn-action btn-reset" onclick="resetAll()">↺</button>
+    </div>
+  </div>
+
+  <!-- ═══ PREVIEW ═══ -->
+  <div class="preview-area">
+    <div class="preview-toolbar">
+      <button class="device-btn active" data-width="390" data-height="780" onclick="setDevice(this)">📱 Mobile</button>
+      <button class="device-btn" data-width="560" data-height="780" onclick="setDevice(this)">📲 Tablet</button>
+      <button class="device-btn" data-width="100%" data-height="100%" onclick="setDevice(this)">🖥️ Desktop</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame" width="390" height="780"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<!-- RENAME MODAL -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal-box">
+    <div class="modal-title">💾 Simpan File HTML</div>
+    <div class="modal-subtitle">Beri nama file sebelum di-download</div>
+    <div class="modal-input-wrap">
+      <input class="modal-input" id="renameInput" type="text" placeholder="nama-file" spellcheck="false" />
+      <span class="modal-ext">.html</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeRenameModal()">Batal</button>
+      <button class="modal-btn modal-btn-ok" onclick="confirmDownload()">⬇ Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+
+  // ── Helpers ──
+  function $(id) { return document.getElementById(id); }
+  function val(id) { return $(id) ? $(id).value : ''; }
+
+  function toggleCollapse(btn) {
+    btn.classList.toggle('open');
+    var body = btn.nextElementSibling;
+    body.classList.toggle('open');
+  }
+  window.toggleCollapse = toggleCollapse;
+
+  function showToast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2500);
+  }
+
+  // ── Device switcher ──
+  function setDevice(btn) {
+    document.querySelectorAll('.device-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var f = $('previewFrame');
+    var w = btn.getAttribute('data-width');
+    var h = btn.getAttribute('data-height');
+    if (w === '100%') {
+      f.style.width = '100%';
+      f.style.height = '100%';
+      f.style.borderRadius = '0';
+    } else {
+      f.style.width = w + 'px';
+      f.style.height = h + 'px';
+      f.style.borderRadius = '12px';
+    }
+  }
+  window.setDevice = setDevice;
+
+  // ── Parse & Format helpers ──
+  function parseRp(str) {
+    if (!str) return 0;
+    return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+  }
+  function formatRp(n) {
+    if (n >= 1000000000) return 'Rp\u00a0' + (n / 1000000000).toFixed(1).replace(/\.0$/, '') + '\u00a0M';
+    if (n >= 1000000) return 'Rp\u00a0' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + '\u00a0Jt';
+    if (n >= 1000) return 'Rp\u00a0' + Math.round(n / 1000) + '\u00a0Rb';
+    return 'Rp\u00a0' + n;
+  }
+
+  // ── Collect Nominals from dynamic list ──
+  function collectNominals() {
+    var rows = document.querySelectorAll('#nominal-list-container .nominal-row');
+    var arr = [];
+    rows.forEach(function(row) {
+      var amount = parseInt(row.querySelector('input[type="number"]').value, 10) || 0;
+      var emoji = row.querySelector('.emoji-sel').value || '';
+      var sub = row.querySelector('.sub-label').value || '';
+      if (amount > 0) arr.push({ amount: amount, emoji: emoji, sub: sub });
+    });
+    return arr;
+  }
+
+  // ── Add Nominal Row ──
+  function addNominalRow(amount, emoji, sub) {
+    var container = $('nominal-list-container');
+    var row = document.createElement('div');
+    row.className = 'nominal-row';
+    row.innerHTML = '<input type="text" class="emoji-sel" value="' + (emoji || '\ud83d\udc4f') + '" maxlength="4" title="Emoji" />'
+      + '<input type="number" value="' + (amount || 50000) + '" min="1000" step="1000" placeholder="Nominal (Rp)" />'
+      + '<input type="text" class="sub-label" value="' + (sub || '') + '" placeholder="Label" title="Sub-label opsional" />'
+      + '<button type="button" class="btn-del-nom" title="Hapus" onclick="this.parentElement.remove();renderPreview();">\u2715</button>';
+    container.appendChild(row);
+    // Listen for changes
+    row.querySelectorAll('input').forEach(function(inp) {
+      inp.addEventListener('input', renderPreview);
+    });
+    renderPreview();
+  }
+  window.addNominalRow = addNominalRow;
+
+  // ── Collect Data ──
+  function collectData() {
+    return {
+      green: document.querySelector('[data-var="green"]').value,
+      greenDark: document.querySelector('[data-var="green-dark"]').value,
+      greenLight: document.querySelector('[data-var="green-light"]').value,
+      text: document.querySelector('[data-var="text"]').value,
+      muted: document.querySelector('[data-var="muted"]').value,
+      bg: document.querySelector('[data-var="bg"]').value,
+      border: document.querySelector('[data-var="border"]').value,
+      heroImg: val('inp-hero-img'),
+      avatarImg: val('inp-avatar-img'),
+      location: val('inp-location'),
+      title: val('inp-title'),
+      ctaText: val('inp-cta-text'),
+      ctaUrl: val('inp-cta-url'),
+      fundName: val('inp-fund-name'),
+      fundLink: val('inp-fund-link'),
+      fundVerified: val('inp-fund-verified'),
+      narasiHTML: $('rteEditor') ? $('rteEditor').innerHTML : '',
+      pageTitle: val('inp-page-title'),
+      ctaEmoji: val('inp-cta-emoji'),
+      targetDonasi: parseRp(val('inp-target-donasi')),
+      danaTerkumpul: parseRp(val('inp-dana-terkumpul')),
+      jumlahDonatur: val('inp-jumlah-donatur') || '0',
+      // Checkout-specific
+      checkoutHeadline: val('inp-checkout-headline'),
+      backUrl: val('inp-back-url') || 'javascript:history.back()',
+      thumbImg: val('inp-checkout-thumb'),
+      nominals: collectNominals()
+    };
+  }
+
+  // ── Build HTML (Router) ──
+  function buildHTML() {
+    var data = collectData();
+    var template = val('inp-template');
+    var html;
+    if (template === 'kitabisa') html = renderKitabisa(data);
+    else if (template === 'checkout') html = renderCheckout(data);
+    else html = renderMMB(data);
+    // Embed save data for re-import
+    var saveData = JSON.stringify(Object.assign({}, data, { template: template }));
+    html = html.replace('</body>', '\n<script id="campaign-data" type="application/json">' + saveData + '<\/script>\n</body>');
+    return html;
+  }
+
+  // ── Render MMB (Default) ──
+  function renderMMB(data) {
+    var greenVal = data.green;
+    var greenDarkVal = data.greenDark;
+    var greenLightVal = data.greenLight;
+    var textVal = data.text;
+    var mutedVal = data.muted;
+    var bgVal = data.bg;
+    var borderVal = data.border;
+
+    var heroImg = data.heroImg;
+    var avatarImg = data.avatarImg;
+
+    var location = data.location;
+    var title = data.title;
+    var ctaText = data.ctaText;
+    var ctaUrl = data.ctaUrl;
+
+    var fundName = data.fundName;
+    var fundLink = data.fundLink;
+    var fundVerified = data.fundVerified;
+
+    var narasiHTML = data.narasiHTML;
+    var pageTitle = data.pageTitle;
+
+    var ctaEmoji = data.ctaEmoji;
+    var ctaLabel = (ctaEmoji ? ctaEmoji + ' ' : '') + ctaText;
+
+    var avatarHTML = avatarImg
+      ? '<img src="' + avatarImg + '" alt="Logo" onerror="this.onerror=null;this.parentElement.innerHTML=\'🕌\';this.parentElement.style.fontSize=\'1.5rem\';">'
+      : '🕌';
+
+    var html = '<!doctype html>\n<html lang="id">\n<head>\n'
+      + '  <meta charset="utf-8" />\n'
+      + '  <meta name="viewport" content="width=device-width, initial-scale=1" />\n'
+      + '  <title>' + escHTML(pageTitle) + '</title>\n'
+      + '  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />\n'
+      + '  <style>\n'
+      + '    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n'
+      + '    :root {\n'
+      + '      --green: ' + greenVal + ';\n'
+      + '      --green-dark: ' + greenDarkVal + ';\n'
+      + '      --green-light: ' + greenLightVal + ';\n'
+      + '      --text: ' + textVal + ';\n'
+      + '      --muted: ' + mutedVal + ';\n'
+      + '      --border: ' + borderVal + ';\n'
+      + '      --white: #ffffff;\n'
+      + '      --bg: ' + bgVal + ';\n'
+      + '    }\n'
+      + '    body { font-family: "Plus Jakarta Sans", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }\n'
+      + '    .page-wrap { max-width: 560px; margin: 0 auto; background: var(--white); min-height: 100vh; padding-bottom: 90px; }\n'
+      + '    .hero-img { width: 100%; height: auto; display: block; }\n'
+      + '    .hero-img-placeholder { width: 100%; height: auto; min-height: 250px; background: linear-gradient(135deg, #1a0533 0%, #2d1b69 50%, #0f3d2e 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: rgba(255,255,255,0.5); font-size: 0.8rem; }\n'
+      + '    .hero-img-placeholder span { font-size: 2.5rem; }\n'
+      + '    .main-content { padding: 20px 16px; }\n'
+      + '    .location-row { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }\n'
+      + '    .location-row svg { flex-shrink: 0; }\n'
+      + '    .campaign-title { font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.45; margin-bottom: 18px; }\n'
+      + '    .btn-donasi { display: block; width: 100%; background: var(--green); color: #ffffff !important; font-family: "Plus Jakarta Sans", sans-serif; font-size: 1rem; font-weight: 800; text-align: center; padding: 15px; border-radius: 8px; text-decoration: none; letter-spacing: 0.01em; transition: background 0.15s, transform 0.15s; margin-bottom: 20px; }\n'
+      + '    .btn-donasi:hover { background: var(--green-dark); transform: translateY(-1px); }\n'
+      + '    .fundraiser-card { background: var(--white); border-radius: 8px; padding: 16px; margin: 10px 0 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }\n'
+      + '    .fundraiser-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 16px; }\n'
+      + '    .fundraiser-row { display: flex; align-items: center; gap: 16px; }\n'
+      + '    .fundraiser-avatar { width: 56px; height: 56px; border-radius: 50%; border: 1px solid #e5e7eb; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; overflow: hidden; position: relative; }\n'
+      + '    .fundraiser-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center center; }\n'
+      + '    .fundraiser-info { display: flex; flex-direction: column; gap: 4px; }\n'
+      + '    .fundraiser-name { font-weight: 600; font-size: 1rem; color: #0ea5e9; text-decoration: none; }\n'
+      + '    .fundraiser-name:hover { text-decoration: underline; }\n'
+      + '    .verified-badge-row { display: flex; align-items: center; gap: 6px; }\n'
+      + '    .verified-org-icon { display: inline-flex; align-items: center; position: relative; }\n'
+      + '    .check-circle { width: 14px; height: 14px; background: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; }\n'
+      + '    .check-circle svg { width: 8px; height: 8px; stroke: #fff; }\n'
+      + '    .org-tag { border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 10px; font-size: 0.55rem; font-weight: 700; padding: 0 4px 0 8px; margin-left: -6px; background: #fff; z-index: 1; line-height: 12px; height: 14px; display: flex; align-items: center; }\n'
+      + '    .verified-text { color: #9ca3af; font-size: 0.75rem; font-style: italic; }\n'
+      + '    .keterangan-section { border-top: 1px solid var(--border); padding: 20px 16px; }\n'
+      + '    .narasi h2 { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 10px; line-height: 1.4; }\n'
+      + '    .narasi h3 { font-size: 0.92rem; font-weight: 700; color: var(--text); margin: 16px 0 8px; font-style: italic; }\n'
+      + '    .narasi p { font-size: 0.87rem; line-height: 1.75; color: #374151; margin-bottom: 12px; }\n'
+      + '    .narasi ul { list-style: disc; padding-left: 20px; margin: 10px 0 14px; }\n'
+      + '    .narasi ol { list-style: decimal; padding-left: 20px; margin: 10px 0 14px; }\n'
+      + '    .narasi ul li, .narasi ol li { font-size: 0.87rem; line-height: 1.5; color: #374151; margin-bottom: 7px; font-weight: 600; }\n'
+      + '    .narasi .img-block { width: 100%; border-radius: 10px; overflow: hidden; margin: 14px 0; background: #e5e7eb; }\n'
+      + '    .narasi .img-block img { width: 100%; display: block; border-radius: 10px; }\n'
+      + '    .narasi .img-placeholder { width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #e5e7eb, #d1d5db); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.78rem; margin: 14px 0; }\n'
+      + '    .narasi .highlight-section { background: #f0fdf4; border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 14px 16px; margin: 14px 0; }\n'
+      + '    .narasi .highlight-section p { margin-bottom: 8px; }\n'
+      + '    .narasi .highlight-section p:last-child { margin-bottom: 0; }\n'
+      + '    .narasi .why-item { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }\n'
+      + '    .narasi .why-item strong { font-size: 0.87rem; color: var(--text); display: block; margin-bottom: 3px; }\n'
+      + '    .narasi .why-item span { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }\n'
+      + '    .narasi .steps { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin: 14px 0; }\n'
+      + '    .narasi .steps p { margin-bottom: 6px; font-weight: 600; }\n'
+      + '    .narasi .steps p:last-child { margin-bottom: 0; }\n'
+      + '    .narasi .footnotes { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-top: 14px; }\n'
+      + '    .narasi .footnotes li { font-size: 0.78rem; color: var(--muted); font-weight: 400; font-style: italic; margin-bottom: 4px; }\n'
+      + '    .narasi .footnotes li::before { content: "• "; }\n'
+      + '    .read-more-wrap { position: relative; }\n'
+      + '    .read-more-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to bottom, transparent, var(--white)); pointer-events: none; }\n'
+      + '    .read-more-fade.hidden { display: none; }\n'
+      + '    .narasi-body { overflow: hidden; }\n'
+      + '    .narasi-body.collapsed { max-height: 320px; }\n'
+      + '    .read-more-btn { display: block; width: 100%; text-align: center; border: 1.5px solid var(--border); border-radius: 99px; padding: 9px 20px; font-size: 0.82rem; font-weight: 700; color: var(--text); background: transparent; cursor: pointer; font-family: inherit; margin-top: 14px; transition: background 0.15s; }\n'
+      + '    .read-more-btn:hover { background: var(--bg); }\n'
+      + '    .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); padding: 10px 16px; z-index: 50; box-shadow: 0 -2px 12px rgba(0,0,0,0.07); transform: translateY(150%); transition: transform 0.3s ease-in-out; }\n'
+      + '    .sticky-footer.show { transform: translateY(0); }\n'
+      + '    .sticky-footer-inner { max-width: 560px; margin: 0 auto; display: flex; gap: 10px; }\n'
+      + '    .sticky-cta { flex: 1; display: block; background: var(--green); color: #ffffff !important; font-family: "Plus Jakarta Sans", sans-serif; font-size: 0.95rem; font-weight: 800; text-align: center; padding: 13px; border-radius: 8px; text-decoration: none; transition: background 0.15s; }\n'
+      + '    .sticky-cta:hover { background: var(--green-dark); }\n'
+      + '    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }\n'
+      + '    .main-content { animation: fadeUp 0.4s ease both; }\n'
+      + '    @media (max-width: 380px) { .main-content { padding: 16px 14px; } .keterangan-section { padding: 16px 14px; } }\n'
+      + '  </style>\n'
+      + '</head>\n<body>\n\n'
+      + '<div class="page-wrap">\n\n'
+      + '  <div class="hero-img-placeholder" role="img" aria-label="Foto kampanye santri">\n'
+      + '    <img src="' + escAttr(heroImg) + '" alt="Foto kampanye" class="hero-img" onerror="this.parentElement.innerHTML=\'<span>🕌</span><p>Foto Kampanye</p>\'" />\n'
+      + '  </div>\n\n'
+      + '  <div class="main-content">\n'
+      + (location.trim() ? ('    <div class="location-row">\n'
+      + '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>\n'
+      + '      ' + escHTML(location) + '\n'
+      + '    </div>\n') : '')
+      + '    <h1 class="campaign-title">' + escHTML(title) + '</h1>\n'
+      + '    <a href="' + escAttr(ctaUrl) + '" target="" rel="" class="btn-donasi" id="ctaMain">' + escHTML(ctaLabel) + '</a>\n\n'
+      + '    <div class="fundraiser-card">\n'
+      + '      <div class="fundraiser-title">Penggalang Dana</div>\n'
+      + '      <div class="fundraiser-row">\n'
+      + '        <div class="fundraiser-avatar" aria-hidden="true">\n'
+      + '          ' + avatarHTML + '\n'
+      + '        </div>\n'
+      + '        <div class="fundraiser-info">\n'
+      + '          <a href="' + escAttr(fundLink) + '" class="fundraiser-name">' + escHTML(fundName) + '</a>\n'
+      + '          <div class="verified-badge-row">\n'
+      + '            <div class="verified-org-icon">\n'
+      + '              <div class="check-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>\n'
+      + '              <div class="org-tag">.org</div>\n'
+      + '            </div>\n'
+      + '            <span class="verified-text">' + escHTML(fundVerified) + '</span>\n'
+      + '          </div>\n'
+      + '        </div>\n'
+      + '      </div>\n'
+      + '    </div>\n'
+      + '  </div>\n\n'
+      + '  <div class="keterangan-section">\n'
+      + '    <div class="narasi">\n'
+      + '      <div class="read-more-wrap">\n'
+      + '        <div class="narasi-body collapsed" id="narasi-body">\n\n'
+      + narasiHTML + '\n\n'
+      + '        </div>\n'
+      + '        <div class="read-more-fade" id="readMoreFade" aria-hidden="true"></div>\n'
+      + '      </div>\n'
+      + '      <button class="read-more-btn" id="readMoreBtn" aria-expanded="false" aria-controls="narasi-body">Baca selengkapnya ▾</button>\n'
+      + '    </div>\n'
+      + '  </div>\n\n'
+      + '</div>\n\n'
+      + '<div class="sticky-footer">\n'
+      + '  <div class="sticky-footer-inner">\n'
+      + '    <a href="' + escAttr(ctaUrl) + '" target="" rel="" class="sticky-cta" id="ctaSticky">' + escHTML(ctaLabel) + '</a>\n'
+      + '  </div>\n'
+      + '</div>\n\n'
+      + '<script>\n'
+      + '(function () {\n'
+      + '  var readMoreBtn = document.getElementById("readMoreBtn");\n'
+      + '  var narasi = document.getElementById("narasi-body");\n'
+      + '  var fade = document.getElementById("readMoreFade");\n'
+      + '  if (readMoreBtn && narasi) {\n'
+      + '    readMoreBtn.addEventListener("click", function () {\n'
+      + '      narasi.classList.toggle("collapsed");\n'
+      + '      var isCollapsed = narasi.classList.contains("collapsed");\n'
+      + '      readMoreBtn.textContent = isCollapsed ? "Baca selengkapnya ▾" : "Tutup ▴";\n'
+      + '      readMoreBtn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");\n'
+      + '      if (fade) fade.classList.toggle("hidden", !isCollapsed);\n'
+      + '    });\n'
+      + '  }\n'
+      + '  var stickyFooter = document.querySelector(".sticky-footer");\n'
+      + '  var ctaMain = document.getElementById("ctaMain");\n'
+      + '  if (stickyFooter && ctaMain) {\n'
+      + '    function checkSticky() {\n'
+      + '      if (window.scrollY > 200 || document.documentElement.scrollTop > 200) {\n'
+      + '        stickyFooter.classList.add("show");\n'
+      + '      } else {\n'
+      + '        stickyFooter.classList.remove("show");\n'
+      + '      }\n'
+      + '    }\n'
+      + '    window.addEventListener("scroll", checkSticky, { passive: true });\n'
+      + '    window.addEventListener("resize", checkSticky, { passive: true });\n'
+      + '    setTimeout(checkSticky, 100);\n'
+      + '  }\n'
+      + '  try {\n'
+      + '    if (window.Scalev && window.Scalev.analytics && window.Scalev.analytics.track) {\n'
+      + '      window.Scalev.analytics.track("facebook", { event_name: "ViewContent" });\n'
+      + '    }\n'
+      + '  } catch (e) {}\n'
+      + '  document.querySelectorAll("#ctaMain, #ctaSticky").forEach(function (el) {\n'
+      + '    el.addEventListener("click", function () {\n'
+      + '      try {\n'
+      + '        if (window.Scalev && window.Scalev.analytics && window.Scalev.analytics.track) {\n'
+      + '          window.Scalev.analytics.track("facebook", { event_name: "InitiateCheckout" });\n'
+      + '        }\n'
+      + '      } catch (e) {}\n'
+      + '    });\n'
+      + '  });\n'
+      + '})();\n'
+      + '</' + 'script>\n\n'
+      + '</body>\n</html>';
+
+    return html;
+  }
+
+  // ── Render Kitabisa ──
+  function renderKitabisa(data) {
+    var ctaLabel = (data.ctaEmoji ? data.ctaEmoji + ' ' : '') + data.ctaText;
+    var avatarHTML = data.avatarImg
+      ? '<img src="' + escAttr(data.avatarImg) + '" alt="Logo" onerror="this.onerror=null;this.parentElement.innerHTML=\'🕌\';this.parentElement.style.fontSize=\'1.3rem\';">'
+      : '🕌';
+    var progressPct = data.targetDonasi > 0
+      ? Math.min(100, Math.round((data.danaTerkumpul / data.targetDonasi) * 100))
+      : 0;
+    var locationRowHTML = data.location.trim()
+      ? '    <div class="kb-location">\n'
+        + '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>\n'
+        + '      ' + escHTML(data.location) + '\n'
+        + '    </div>\n'
+      : '';
+
+    var html = '<!doctype html>\n<html lang="id">\n<head>\n'
+      + '  <meta charset="utf-8" />\n'
+      + '  <meta name="viewport" content="width=device-width, initial-scale=1" />\n'
+      + '  <title>' + escHTML(data.pageTitle) + '</title>\n'
+      + '  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />\n'
+      + '  <style>\n'
+      + '    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n'
+      + '    :root { --primary: ' + data.green + '; --primary-dark: ' + data.greenDark + '; --text: ' + data.text + '; --muted: ' + data.muted + '; --border: ' + data.border + '; --bg: ' + data.bg + '; --white: #ffffff; }\n'
+      + '    body { font-family: "Plus Jakarta Sans", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }\n'
+      + '    .kb-page { max-width: 560px; margin: 0 auto; background: var(--white); min-height: 100vh; padding-bottom: 100px; }\n'
+      + '    .kb-hero-wrap { background: #e5e7eb; }\n'
+      + '    .kb-hero-img { width: 100%; height: auto; display: block; }\n'
+      + '    .kb-content { padding: 20px 16px 0; animation: fadeUp 0.4s ease both; }\n'
+      + '    .kb-location { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }\n'
+      + '    .kb-title { font-size: 1.05rem; font-weight: 800; line-height: 1.45; color: var(--text); margin-bottom: 16px; }\n'
+      + '    .kb-progress-wrap { margin-bottom: 14px; }\n'
+      + '    .kb-progress-track { width: 100%; height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-bottom: 7px; }\n'
+      + '    .kb-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); border-radius: 99px; }\n'
+      + '    .kb-progress-pct { font-size: 0.78rem; font-weight: 700; color: var(--primary); }\n'
+      + '    .kb-stats { display: flex; gap: 10px; margin-bottom: 18px; }\n'
+      + '    .kb-stat-card { flex: 1; background: var(--bg); border-radius: 10px; padding: 11px 12px; border: 1px solid var(--border); }\n'
+      + '    .kb-stat-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }\n'
+      + '    .kb-stat-val { font-size: 0.9rem; font-weight: 800; color: var(--text); }\n'
+      + '    .kb-stat-val.primary { color: var(--primary); }\n'
+      + '    .kb-cta-btn { display: block; width: 100%; background: var(--primary); color: #ffffff !important; font-family: "Plus Jakarta Sans", sans-serif; font-size: 1rem; font-weight: 800; text-align: center; padding: 15px; border-radius: 10px; text-decoration: none; transition: background 0.15s, transform 0.15s; margin-bottom: 20px; }\n'
+      + '    .kb-cta-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }\n'
+      + '    .kb-divider { height: 1px; background: var(--border); margin: 4px 0 20px; }\n'
+      + '    .kb-fundraiser { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }\n'
+      + '    .kb-avatar { width: 46px; height: 46px; border-radius: 50%; background: #f0fdf4; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; overflow: hidden; position: relative; }\n'
+      + '    .kb-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center center; }\n'
+      + '    .kb-fundraiser-info { flex: 1; }\n'
+      + '    .kb-fundraiser-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }\n'
+      + '    .kb-fundraiser-name { font-weight: 700; font-size: 0.88rem; color: var(--primary); text-decoration: none; }\n'
+      + '    .kb-fundraiser-name:hover { text-decoration: underline; }\n'
+      + '    .kb-verified { display: flex; align-items: center; gap: 4px; font-size: 0.68rem; color: var(--muted); margin-top: 3px; font-style: italic; }\n'
+      + '    .kb-check { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }\n'
+      + '    .kb-check svg { width: 7px; height: 7px; stroke: #fff; }\n'
+      + '    .kb-narasi-section { padding: 0 16px; }\n'
+      + '    .narasi h2 { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 10px; line-height: 1.4; }\n'
+      + '    .narasi h3 { font-size: 0.92rem; font-weight: 700; color: var(--text); margin: 16px 0 8px; font-style: italic; }\n'
+      + '    .narasi p { font-size: 0.87rem; line-height: 1.75; color: #374151; margin-bottom: 12px; }\n'
+      + '    .narasi ul { list-style: disc; padding-left: 20px; margin: 10px 0 14px; }\n'
+      + '    .narasi ol { list-style: decimal; padding-left: 20px; margin: 10px 0 14px; }\n'
+      + '    .narasi ul li, .narasi ol li { font-size: 0.87rem; line-height: 1.5; color: #374151; margin-bottom: 7px; font-weight: 600; }\n'
+      + '    .narasi .highlight-section { background: #f0fdf4; border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; padding: 14px 16px; margin: 14px 0; }\n'
+      + '    .narasi .highlight-section p { margin-bottom: 8px; }\n'
+      + '    .narasi .highlight-section p:last-child { margin-bottom: 0; }\n'
+      + '    .narasi .why-item { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }\n'
+      + '    .narasi .why-item strong { font-size: 0.87rem; color: var(--text); display: block; margin-bottom: 3px; }\n'
+      + '    .narasi .why-item span { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }\n'
+      + '    .narasi .steps { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin: 14px 0; }\n'
+      + '    .narasi .steps p { margin-bottom: 6px; font-weight: 600; }\n'
+      + '    .narasi .steps p:last-child { margin-bottom: 0; }\n'
+      + '    .narasi .footnotes { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-top: 14px; }\n'
+      + '    .narasi .footnotes li { font-size: 0.78rem; color: var(--muted); font-weight: 400; font-style: italic; margin-bottom: 4px; }\n'
+      + '    .narasi .footnotes li::before { content: "• "; }\n'
+      + '    .read-more-wrap { position: relative; }\n'
+      + '    .read-more-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to bottom, transparent, var(--white)); pointer-events: none; }\n'
+      + '    .read-more-fade.hidden { display: none; }\n'
+      + '    .narasi-body { overflow: hidden; }\n'
+      + '    .narasi-body.collapsed { max-height: 320px; }\n'
+      + '    .read-more-btn { display: block; width: 100%; text-align: center; border: 1.5px solid var(--border); border-radius: 99px; padding: 9px 20px; font-size: 0.82rem; font-weight: 700; color: var(--text); background: transparent; cursor: pointer; font-family: inherit; margin-top: 14px; transition: background 0.15s; }\n'
+      + '    .read-more-btn:hover { background: var(--bg); }\n'
+      + '    .kb-sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); padding: 12px 16px; z-index: 50; box-shadow: 0 -2px 16px rgba(0,0,0,0.09); transform: translateY(150%); transition: transform 0.3s ease-in-out; }\n'
+      + '    .kb-sticky-footer.show { transform: translateY(0); }\n'
+      + '    .kb-sticky-inner { max-width: 560px; margin: 0 auto; }\n'
+      + '    .kb-sticky-cta { display: block; width: 100%; background: var(--primary); color: #ffffff !important; font-family: "Plus Jakarta Sans", sans-serif; font-size: 1rem; font-weight: 800; text-align: center; padding: 15px; border-radius: 10px; text-decoration: none; transition: background 0.15s; }\n'
+      + '    .kb-sticky-cta:hover { background: var(--primary-dark); }\n'
+      + '    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }\n'
+      + '    @media (max-width: 380px) { .kb-content { padding: 16px 14px 0; } .kb-narasi-section { padding: 0 14px; } }\n'
+      + '  </style>\n'
+      + '</head>\n<body>\n\n'
+      + '<div class="kb-page">\n'
+      + '  <div class="kb-hero-wrap">\n'
+      + '    <img src="' + escAttr(data.heroImg) + '" alt="Foto kampanye" class="kb-hero-img" onerror="this.parentElement.style.minHeight=\'220px\';this.parentElement.style.background=\'linear-gradient(135deg,#1a0533,#2d1b69 50%,#0f3d2e)\';this.style.display=\'none\';" />\n'
+      + '  </div>\n\n'
+      + '  <div class="kb-content">\n'
+      + locationRowHTML
+      + '    <h1 class="kb-title">' + escHTML(data.title) + '</h1>\n\n'
+      + '    <div class="kb-progress-wrap">\n'
+      + '      <div class="kb-progress-track"><div class="kb-progress-fill" style="width:' + progressPct + '%;"></div></div>\n'
+      + '      <span class="kb-progress-pct">' + progressPct + '% tercapai</span>\n'
+      + '    </div>\n\n'
+      + '    <div class="kb-stats">\n'
+      + '      <div class="kb-stat-card"><div class="kb-stat-label">Terkumpul</div><div class="kb-stat-val primary">' + formatRp(data.danaTerkumpul) + '</div></div>\n'
+      + '      <div class="kb-stat-card"><div class="kb-stat-label">Target</div><div class="kb-stat-val">' + formatRp(data.targetDonasi) + '</div></div>\n'
+      + '      <div class="kb-stat-card"><div class="kb-stat-label">Donatur</div><div class="kb-stat-val">' + escHTML(data.jumlahDonatur) + '</div></div>\n'
+      + '    </div>\n\n'
+      + '    <a href="' + escAttr(data.ctaUrl) + '" target="" rel="" class="kb-cta-btn" id="ctaMain">' + escHTML(ctaLabel) + '</a>\n\n'
+      + '    <div class="kb-divider"></div>\n\n'
+      + '    <div class="kb-fundraiser">\n'
+      + '      <div class="kb-avatar">\n'
+      + '        ' + avatarHTML + '\n'
+      + '      </div>\n'
+      + '      <div class="kb-fundraiser-info">\n'
+      + '        <div class="kb-fundraiser-label">Penggalang Dana</div>\n'
+      + '        <a href="' + escAttr(data.fundLink) + '" class="kb-fundraiser-name">' + escHTML(data.fundName) + '</a>\n'
+      + '        <div class="kb-verified">\n'
+      + '          <span class="kb-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>\n'
+      + '          ' + escHTML(data.fundVerified) + '\n'
+      + '        </div>\n'
+      + '      </div>\n'
+      + '    </div>\n'
+      + '    <div class="kb-divider"></div>\n'
+      + '  </div>\n\n'
+      + '  <div class="kb-narasi-section">\n'
+      + '    <div class="narasi">\n'
+      + '      <div class="read-more-wrap">\n'
+      + '        <div class="narasi-body collapsed" id="narasi-body">\n\n'
+      + data.narasiHTML + '\n\n'
+      + '        </div>\n'
+      + '        <div class="read-more-fade" id="readMoreFade" aria-hidden="true"></div>\n'
+      + '      </div>\n'
+      + '      <button class="read-more-btn" id="readMoreBtn" aria-expanded="false" aria-controls="narasi-body">Baca selengkapnya \u25be</button>\n'
+      + '    </div>\n'
+      + '  </div>\n\n'
+      + '</div>\n\n'
+      + '<div class="kb-sticky-footer">\n'
+      + '  <div class="kb-sticky-inner">\n'
+      + '    <a href="' + escAttr(data.ctaUrl) + '" target="" rel="" class="kb-sticky-cta" id="ctaSticky">' + escHTML(ctaLabel) + '</a>\n'
+      + '  </div>\n'
+      + '</div>\n\n'
+      + '<script>\n'
+      + '(function () {\n'
+      + '  var readMoreBtn = document.getElementById("readMoreBtn");\n'
+      + '  var narasi = document.getElementById("narasi-body");\n'
+      + '  var fade = document.getElementById("readMoreFade");\n'
+      + '  if (readMoreBtn && narasi) {\n'
+      + '    readMoreBtn.addEventListener("click", function () {\n'
+      + '      narasi.classList.toggle("collapsed");\n'
+      + '      var isCollapsed = narasi.classList.contains("collapsed");\n'
+      + '      readMoreBtn.textContent = isCollapsed ? "Baca selengkapnya \u25be" : "Tutup \u25b4";\n'
+      + '      readMoreBtn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");\n'
+      + '      if (fade) fade.classList.toggle("hidden", !isCollapsed);\n'
+      + '    });\n'
+      + '  }\n'
+      + '  var stickyFooter = document.querySelector(".kb-sticky-footer");\n'
+      + '  var ctaMain = document.getElementById("ctaMain");\n'
+      + '  if (stickyFooter && ctaMain) {\n'
+      + '    function checkSticky() {\n'
+      + '      if (window.scrollY > 200 || document.documentElement.scrollTop > 200) {\n'
+      + '        stickyFooter.classList.add("show");\n'
+      + '      } else {\n'
+      + '        stickyFooter.classList.remove("show");\n'
+      + '      }\n'
+      + '    }\n'
+      + '    window.addEventListener("scroll", checkSticky, { passive: true });\n'
+      + '    window.addEventListener("resize", checkSticky, { passive: true });\n'
+      + '    setTimeout(checkSticky, 100);\n'
+      + '  }\n'
+      + '  try {\n'
+      + '    if (window.Scalev && window.Scalev.analytics && window.Scalev.analytics.track) {\n'
+      + '      window.Scalev.analytics.track("facebook", { event_name: "ViewContent" });\n'
+      + '    }\n'
+      + '  } catch (e) {}\n'
+      + '  document.querySelectorAll("#ctaMain, #ctaSticky").forEach(function (el) {\n'
+      + '    el.addEventListener("click", function () {\n'
+      + '      try {\n'
+      + '        if (window.Scalev && window.Scalev.analytics && window.Scalev.analytics.track) {\n'
+      + '          window.Scalev.analytics.track("facebook", { event_name: "InitiateCheckout" });\n'
+      + '        }\n'
+      + '      } catch (e) {}\n'
+      + '    });\n'
+      + '  });\n'
+      + '})();\n'
+      + '</' + 'script>\n\n'
+      + '</body>\n</html>';
+
+    return html;
+  }
+
+  // ── Render Checkout (Layer 2) ──
+  function renderCheckout(data) {
+    var headline = data.checkoutHeadline || data.title;
+    var backUrl = data.backUrl || 'javascript:history.back()';
+    var thumbImg = data.thumbImg || data.heroImg;
+    var nominals = data.nominals || [];
+    var greenVal = data.green;
+    var greenDarkVal = data.greenDark;
+
+    function fmtNom(n) {
+      if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(0) + ' jt';
+      if (n >= 1000) return 'Rp ' + (n / 1000).toFixed(0) + ' rb';
+      return 'Rp ' + n;
+    }
+
+    var nominalBtnsHTML = '';
+    for (var i = 0; i < nominals.length; i++) {
+      var nom = nominals[i];
+      nominalBtnsHTML += '      <button class="nominal-btn" data-amount="' + nom.amount + '">\n'
+        + '        <span class="emoji">' + escHTML(nom.emoji || '\uD83D\uDC4F') + '</span>\n'
+        + '        <span class="amount">' + fmtNom(nom.amount) + '</span>\n'
+        + (nom.sub ? '        <span class="sub">' + escHTML(nom.sub) + '</span>\n' : '')
+        + '      </button>\n';
+    }
+
+    // ── CSS ──
+    var cssBlock = ''
+      + '    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n'
+      + '    :root { --primary: ' + greenVal + '; --primary-dark: ' + greenDarkVal + '; --primary-light: #dcfce7; --primary-bg: #f0fdf4; --text: ' + data.text + '; --muted: ' + data.muted + '; --border: ' + data.border + '; --white: #ffffff; --bg: ' + data.bg + '; --danger: #ef4444; --blue: #3b82f6; --blue-light: #eff6ff; --radius: 12px; }\n'
+      + '    body { font-family: "Plus Jakarta Sans", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }\n'
+      + '    .page-wrap { max-width: 480px; margin: 0 auto; background: var(--white); min-height: 100vh; padding-bottom: 100px; }\n'
+      + '    .checkout-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--white); position: sticky; top: 0; z-index: 50; }\n'
+      + '    .checkout-header .back-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; text-decoration: none; color: var(--text); flex-shrink: 0; }\n'
+      + '    .checkout-header .back-btn:hover { background: var(--bg); }\n'
+      + '    .checkout-header .back-btn svg { width: 18px; height: 18px; }\n'
+      + '    .checkout-header h1 { font-size: 0.92rem; font-weight: 700; color: var(--text); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }\n'
+      + '    .campaign-info { display: flex; align-items: center; gap: 14px; padding: 16px; border-bottom: 6px solid var(--bg); }\n'
+      + '    .campaign-thumb { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: #e5e7eb; }\n'
+      + '    .campaign-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n'
+      + '    .campaign-meta { flex: 1; min-width: 0; }\n'
+      + '    .campaign-meta .label { font-size: 0.72rem; color: var(--blue); font-weight: 600; margin-bottom: 4px; }\n'
+      + '    .campaign-meta .title { font-size: 0.85rem; font-weight: 700; color: var(--text); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }\n'
+      + '    .section { padding: 20px 16px; border-bottom: 6px solid var(--bg); }\n'
+      + '    .section:last-of-type { border-bottom: none; }\n'
+      + '    .section-label { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }\n'
+      + '    .section-label .icon { font-size: 1rem; }\n'
+      + '    .nominal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }\n'
+      + '    .nominal-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 14px 8px; border: 2px solid var(--border); border-radius: var(--radius); background: var(--white); font-family: inherit; cursor: pointer; transition: all 0.2s; }\n'
+      + '    .nominal-btn .emoji { font-size: 1.3rem; line-height: 1; }\n'
+      + '    .nominal-btn .amount { font-size: 0.88rem; font-weight: 700; color: var(--text); }\n'
+      + '    .nominal-btn .sub { font-size: 0.65rem; color: var(--muted); font-weight: 500; }\n'
+      + '    .nominal-btn:hover { border-color: var(--primary); background: var(--primary-bg); }\n'
+      + '    .nominal-btn.active { border-color: var(--primary); background: var(--primary-bg); box-shadow: 0 0 0 1px var(--primary); }\n'
+      + '    .nominal-btn.active::after { content: "\\2713"; position: absolute; top: 6px; right: 8px; font-size: 0.7rem; font-weight: 800; color: var(--white); background: var(--primary); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }\n'
+      + '    .sapaan-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n'
+      + '    .sapaan-row .label-text { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-right: 4px; }\n'
+      + '    .sapaan-btn { padding: 7px 18px; border: 1.5px solid var(--border); border-radius: 99px; background: var(--white); font-family: inherit; font-size: 0.8rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }\n'
+      + '    .sapaan-btn:hover { border-color: var(--primary); color: var(--primary); }\n'
+      + '    .sapaan-btn.active { background: var(--primary); border-color: var(--primary); color: var(--white); }\n'
+      + '    .form-group { margin-bottom: 16px; }\n'
+      + '    .form-input { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.88rem; color: var(--text); background: var(--white); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }\n'
+      + '    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(34,197,94,0.12); }\n'
+      + '    .form-input::placeholder { color: #c9cdd4; }\n'
+      + '    textarea.form-input { resize: vertical; min-height: 80px; }\n'
+      + '    .anon-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; margin-bottom: 16px; }\n'
+      + '    .anon-row .anon-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }\n'
+      + '    .toggle-switch { position: relative; width: 46px; height: 26px; cursor: pointer; }\n'
+      + '    .toggle-switch input { opacity: 0; width: 0; height: 0; }\n'
+      + '    .toggle-slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 99px; transition: all 0.25s; }\n'
+      + '    .toggle-slider::before { content: ""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: var(--white); bottom: 3px; left: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: transform 0.25s; }\n'
+      + '    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }\n'
+      + '    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }\n'
+      + '    .sticky-submit { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); padding: 12px 16px; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }\n'
+      + '    .sticky-submit-inner { max-width: 480px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }\n'
+      + '    .submit-total { flex-shrink: 0; }\n'
+      + '    .submit-total .total-label { font-size: 0.68rem; color: var(--muted); font-weight: 500; }\n'
+      + '    .submit-total .total-amount { font-size: 1.1rem; font-weight: 800; color: var(--primary-dark); }\n'
+      + '    .btn-submit { flex: 1; background: var(--primary); color: var(--white); border: none; font-family: inherit; font-size: 0.95rem; font-weight: 800; padding: 14px 20px; border-radius: 10px; cursor: pointer; transition: background 0.15s, transform 0.15s; }\n'
+      + '    .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); }\n'
+      + '    .btn-submit:active { transform: scale(0.98); }\n'
+      + '    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }\n'
+      + '    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(30px); background: #ef4444; color: var(--white); padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.15); opacity: 0; transition: all 0.3s; z-index: 999; pointer-events: none; text-align: center; max-width: 90%; }\n'
+      + '    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }\n'
+      + '    .toast.success { background: var(--primary); }\n'
+      + '    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }\n'
+      + '    .section { animation: fadeUp 0.4s ease both; }\n'
+      + '    .section:nth-child(2) { animation-delay: 0.05s; } .section:nth-child(3) { animation-delay: 0.1s; } .section:nth-child(4) { animation-delay: 0.15s; }\n'
+      + '    .payment-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--white); cursor: pointer; font-family: inherit; transition: all 0.2s; }\n'
+      + '    .payment-btn:hover { border-color: var(--primary); }\n'
+      + '    .payment-btn-content { display: flex; align-items: center; gap: 12px; }\n'
+      + '    .payment-icon { width: 42px; height: 28px; object-fit: contain; }\n'
+      + '    .payment-icon.default { background: #f3f4f6; border-radius: 4px; padding: 4px; }\n'
+      + '    .payment-name { font-size: 0.88rem; font-weight: 700; color: var(--text); text-align: left; }\n'
+      + '    .pay-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; align-items: flex-end; justify-content: center; }\n'
+      + '    .pay-modal-overlay.show { opacity: 1; pointer-events: auto; }\n'
+      + '    .pay-modal { width: 100%; max-width: 480px; background: var(--white); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); max-height: 80vh; display: flex; flex-direction: column; }\n'
+      + '    .pay-modal-overlay.show .pay-modal { transform: translateY(0); }\n'
+      + '    .pay-modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }\n'
+      + '    .pay-modal-header h3 { font-size: 1.05rem; font-weight: 800; }\n'
+      + '    .pay-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--muted); line-height: 1; }\n'
+      + '    .pay-modal-body { padding: 14px 16px 20px; overflow-y: auto; }\n'
+      + '    .pay-option { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }\n'
+      + '    .pay-option:hover { border-color: var(--primary); background: var(--primary-bg); }\n'
+      + '    .pay-option.selected { border-color: var(--primary); background: var(--primary-bg); box-shadow: 0 0 0 1px var(--primary); }\n'
+      + '    @media (max-width: 360px) { .nominal-grid { grid-template-columns: repeat(2, 1fr); } .checkout-header h1 { font-size: 0.85rem; } }\n';
+
+    // ── JS — copied from original checkout-layer2.html with correct Scalev API ──
+    var jsBlock = ''
+      + '(function () {\n'
+      + '  var selectedAmount = 0;\n'
+      + '  var selectedSapaan = "Bu";\n'
+      + '  function $(id) { return document.getElementById(id); }\n'
+      + '  function showToast(msg, type) { var t = $("toast"); t.textContent = msg; t.className = "toast show" + (type === "success" ? " success" : ""); setTimeout(function () { t.className = "toast"; }, 3000); }\n'
+      + '  function formatRupiah(n) { if (n >= 1000000) return "Rp " + (n / 1000000).toFixed(0) + " jt"; if (n >= 1000) return "Rp " + (n / 1000).toFixed(0) + " rb"; return "Rp " + n; }\n'
+      + '  var nominalBtns = document.querySelectorAll(".nominal-btn");\n'
+      + '  nominalBtns.forEach(function (btn) { btn.addEventListener("click", function () { nominalBtns.forEach(function (b) { b.classList.remove("active"); }); btn.classList.add("active"); selectedAmount = parseInt(btn.getAttribute("data-amount"), 10); $("total-display").textContent = formatRupiah(selectedAmount); }); });\n'
+      + '  var sapaanBtns = document.querySelectorAll(".sapaan-btn");\n'
+      + '  sapaanBtns.forEach(function (btn) { btn.addEventListener("click", function () { sapaanBtns.forEach(function (b) { b.classList.remove("active"); }); btn.classList.add("active"); selectedSapaan = btn.getAttribute("data-sapaan"); $("inp-sapaan").value = selectedSapaan; }); });\n'
+      + '  $("inp-anon").addEventListener("change", function () { var ni = $("inp-name"); if (this.checked) { ni.value = "Hamba Allah"; ni.readOnly = true; ni.style.background = "#f3f4f6"; } else { ni.value = ""; ni.readOnly = false; ni.style.background = ""; } });\n'
+      + '  var isSubmitting = false;\n'
+      + '  $("btn-submit").addEventListener("click", function () {\n'
+      + '    if (isSubmitting) return;\n'
+      + '    if (!selectedAmount) { showToast("Silakan pilih nominal donasi terlebih dahulu"); return; }\n'
+      + '    var name = $("inp-name").value.trim(); if (!name) { showToast("Silakan isi Nama Lengkap Anda"); $("inp-name").focus(); return; }\n'
+      + '    var phone = $("inp-phone").value.trim(); if (!phone) { showToast("Silakan isi Nomor WhatsApp Anda"); $("inp-phone").focus(); return; }\n'
+      + '    var selectedPayment = $("inp-payment-method").value; if (!selectedPayment) { showToast("Silakan pilih metode pembayaran"); return; }\n'
+      + '    var atasNama = $("inp-atas-nama").value.trim();\n'
+      + '    var doa = $("inp-doa").value.trim();\n'
+      + '    var ref = "REF" + Date.now().toString(36).toUpperCase();\n'
+      + '    var notes = "[" + ref + "] Sapaan: " + selectedSapaan;\n'
+      + '    if (atasNama) notes += " | Atas Nama: " + atasNama;\n'
+      + '    if (doa) notes += " | Doa: " + doa;\n'
+      + '    submitToScalev(name, phone, notes);\n'
+      + '  });\n\n'
+      // Scalev helpers (updated to new camelCase contract)
+      + '  var PAYMENT_INSTRUCTION_METHODS = new Set(["va","qris","card","invoice","alfamart","ovo","dana","shopeepay","linkaja","gopay"]);\n'
+      + '  var SCALEV_QUERY_FORWARD_HOSTS = new Set(["scalev.com","scalev.id","app.scalev.id","app.scalev.com"]);\n'
+      + '  function paymentMethodForRedirect(pm) { if (typeof pm !== "string") return pm; if (pm.toLowerCase().startsWith("va:")) return "va"; if (pm.toLowerCase().startsWith("bt:")) return "bank_transfer"; return pm; }\n'
+      + '  function publicOrderUrl(o) { if (o.publicOrderUrl) return o.publicOrderUrl; return new URL("/o/" + o.secretSlug, window.location.origin).toString(); }\n'
+      + '  function successPageUrl(o) { if (o.paymentUrl) return o.paymentUrl; if (o.status === "draft") return publicOrderUrl(o); return new URL("/o/" + o.secretSlug + "/success", window.location.origin).toString(); }\n'
+      + '  function withCurrentQuery(url) { var nu = new URL(url, window.location.href); var cp = new URLSearchParams(window.location.search); cp.forEach(function(v,k){ nu.searchParams.set(k,v); }); return nu.toString(); }\n'
+      + '  function maybeForwardCurrentQuery(url) { try { var u = new URL(url, window.location.href); var known = new Set([window.location.hostname]); SCALEV_QUERY_FORWARD_HOSTS.forEach(function(h){ known.add(h); }); if (!known.has(u.hostname)) return url; return withCurrentQuery(url); } catch(e) { return url; } }\n'
+      + '  function whatsappUrl(phone, order, fb) { var cp = String(phone || "").replace(/[^\\d]/g, ""); var msg = order.chatMessage || encodeURIComponent(fb || ""); return "https://api.whatsapp.com/send/?phone=" + cp + "&text=" + msg; }\n'
+      + '  function navigateAfterOrder(url) { window.location.href = url; }\n\n'
+      // Bank logos & sorting (from original checkout-layer2.html)
+      + '  var BANK_LOGOS = {\n'
+      + '    "bca": "https://cdn.scalev.id/icons/BT_bca.png",\n'
+      + '    "central": "https://cdn.scalev.id/icons/BT_bca.png",\n'
+      + '    "bsi": "https://cdn.scalev.id/icons/BT_bankbsi.png",\n'
+      + '    "syariah": "https://cdn.scalev.id/icons/BT_bankbsi.png",\n'
+      + '    "mandiri": "https://cdn.scalev.id/icons/BT_bankmandiri.png",\n'
+      + '    "bri": "https://cdn.scalev.id/icons/BRI.png",\n'
+      + '    "rakyat": "https://cdn.scalev.id/icons/BRI.png",\n'
+      + '    "qris": "https://cdn.scalev.id/icons/qris.png"\n'
+      + '  };\n'
+      + '  var PAYMENT_ORDER = ["bca","central","bsi","syariah","mandiri","bri","rakyat","qris"];\n'
+      + '  function getLogoUrl(name) { var lower = name.toLowerCase(); for (var key in BANK_LOGOS) { if (lower.includes(key)) return BANK_LOGOS[key]; } return ""; }\n'
+      + '  function getPaymentPriority(name) { var lower = name.toLowerCase(); for (var i = 0; i < PAYMENT_ORDER.length; i++) { if (lower.includes(PAYMENT_ORDER[i])) return i; } return 99; }\n\n'
+      // Payment list rendering — using opt.display & opt.value (correct Scalev API)
+      + '  var payBtn = $("btn-payment-selector");\n'
+      + '  var payModal = $("payModal");\n'
+      + '  var payList = $("pay-list-container");\n'
+      + '  var inpPayment = $("inp-payment-method");\n'
+      + '  payBtn.addEventListener("click", function() { payModal.classList.add("show"); });\n\n'
+      + '  function renderPaymentList(options) {\n'
+      + '    payList.innerHTML = "";\n'
+      + '    if (!options || options.length === 0) { payList.innerHTML = \'<div style="text-align:center;padding:20px;color:#ef4444;">Tidak ada metode pembayaran aktif di Scalev</div>\'; return; }\n'
+      + '    var sorted = options.slice().sort(function(a, b) { return getPaymentPriority(a.display || a.value) - getPaymentPriority(b.display || b.value); });\n'
+      + '    sorted.forEach(function(opt) {\n'
+      + '      var name = opt.display || opt.value;\n'
+      + '      var logoUrl = opt.logo || opt.image || opt.icon || getLogoUrl(name);\n'
+      + '      var div = document.createElement("div"); div.className = "pay-option";\n'
+      + '      if (inpPayment.value === opt.value) div.classList.add("selected");\n'
+      + '      var logoHtml = logoUrl\n'
+      + '        ? \'<img src="\' + logoUrl + \'" class="payment-icon" alt="\' + name + \'" style="border-radius:4px;">\'\n'
+      + '        : \'<div class="payment-icon" style="background:#6b7280;color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:800;width:42px;height:28px;flex-shrink:0;">\' + name.substring(0,3).toUpperCase() + \'</div>\';\n'
+      + '      div.innerHTML = logoHtml + \'<div class="payment-name">\' + name + \'</div>\';\n'
+      + '      div.addEventListener("click", function() {\n'
+      + '        inpPayment.value = opt.value;\n'
+      + '        $("selected-pay-icon").innerHTML = logoHtml;\n'
+      + '        $("selected-pay-name").textContent = name; $("selected-pay-name").style.color = "#111827";\n'
+      + '        payModal.classList.remove("show");\n'
+      + '        document.querySelectorAll(".pay-option").forEach(function(el){ el.classList.remove("selected"); });\n'
+      + '        div.classList.add("selected");\n'
+      + '      });\n'
+      + '      payList.appendChild(div);\n'
+      + '    });\n'
+      + '  }\n\n'
+      // Init — uses paymentMethodOptions (new Scalev API contract)
+      + '  window.addEventListener("load", function() {\n'
+      + '    setTimeout(function() {\n'
+      + '      if (window.Scalev) {\n'
+      + '        try {\n'
+      + '          var data = window.Scalev.data.get();\n'
+      + '          var options = data.store.paymentMethodOptions || [];\n'
+      + '          renderPaymentList(options);\n'
+      + '        } catch (e) { console.error("Gagal memuat metode pembayaran dari Scalev", e); }\n'
+      + '      } else {\n'
+      + '        renderPaymentList([{value:"bca",display:"Bank Central Asia (BCA)"},{value:"mandiri",display:"Bank Mandiri"},{value:"qris",display:"QRIS"}]);\n'
+      + '      }\n'
+      + '    }, 800);\n'
+      + '  });\n\n'
+      // Success redirect — updated to new Scalev contract (camelCase + afterCheckout)
+      + '  function handleSuccessRedirect(order, paymentMethod) {\n'
+      + '    if (!window.Scalev || !window.Scalev.data) { window.location.href = publicOrderUrl(order); return; }\n'
+      + '    var sdata = window.Scalev.data.get(); var ac = sdata.afterCheckout || {};\n'
+      + '    var type = ac.type || "success_page";\n'
+      + '    var redirectPM = paymentMethodForRedirect(paymentMethod || order.paymentMethod);\n'
+      + '    var finalType = PAYMENT_INSTRUCTION_METHODS.has(redirectPM) ? "success_page" : type;\n'
+      + '    if (finalType === "success_page") return navigateAfterOrder(successPageUrl(order));\n'
+      + '    if (finalType === "direct_to_whatsapp") { var ph = order.handlerPhone; return navigateAfterOrder(ph ? whatsappUrl(ph, order) : publicOrderUrl(order)); }\n'
+      + '    if (finalType === "direct_to_custom_whatsapp") return navigateAfterOrder(whatsappUrl(ac.customWhatsappPhone, order));\n'
+      + '    if (finalType === "other_page") return navigateAfterOrder(withCurrentQuery(ac.otherPagePath));\n'
+      + '    if (finalType === "order_page") return navigateAfterOrder(publicOrderUrl(order));\n'
+      + '    if (finalType === "custom_url") return navigateAfterOrder(maybeForwardCurrentQuery(ac.customUrl));\n'
+      + '    return navigateAfterOrder(successPageUrl(order));\n'
+      + '  }\n\n'
+      // Submit to Scalev — updated to new contract (customer/items payload, no manual analytics)
+      + '  async function submitToScalev(name, phone, notes) {\n'
+      + '    var button = $("btn-submit"); isSubmitting = true; button.disabled = true; button.textContent = "Memproses...";\n'
+      + '    try {\n'
+      + '      if (!window.Scalev || !window.Scalev.checkout) throw new Error("Scalev belum siap. Refresh halaman.");\n'
+      + '      var scalev = window.Scalev; var data = scalev.data.get(); var store = data.store;\n'
+      + '      if (!store) { showToast("Store context belum tersedia"); isSubmitting = false; button.disabled = false; button.textContent = "\\uD83E\\uDD32 Donasi Sekarang"; return; }\n'
+      + '      var selectedPayment = $("inp-payment-method").value;\n'
+      + '      var products = store.products || [];\n'
+      + '      if (products.length === 0) { showToast("Error: Tidak ada produk yang ditautkan."); isSubmitting = false; button.disabled = false; button.textContent = "\\uD83E\\uDD32 Donasi Sekarang"; return; }\n'
+      + '      var detectedVariantId = null;\n'
+      + '      for (var p = 0; p < products.length; p++) { var variants = products[p].variants || []; for (var vi = 0; vi < variants.length; vi++) { var v = variants[vi]; var vPrice = parseInt(v.sell_price || v.price || v.normal_price || 0, 10); if (vPrice === selectedAmount) { detectedVariantId = v.unique_id; break; } } if (detectedVariantId) break; }\n'
+      + '      if (!detectedVariantId) { showToast("Error: Varian untuk harga " + formatRupiah(selectedAmount) + " belum ditautkan."); isSubmitting = false; button.disabled = false; button.textContent = "\\uD83E\\uDD32 Donasi Sekarang"; return; }\n'
+      + '      var payload = {\n'
+      + '        customer: { name: name, phone: phone },\n'
+      + '        items: [{ type: "product", variantUniqueId: detectedVariantId, quantity: 1 }],\n'
+      + '        paymentMethod: selectedPayment,\n'
+      + '        notes: notes\n'
+      + '      };\n'
+      + '      var order = await scalev.checkout.createOrder(payload);\n'
+      + '      showToast("Pesanan berhasil dibuat! Mengalihkan...", "success");\n'
+      + '      try { if (scalev.prefill && scalev.prefill.save) scalev.prefill.save({ customerName: name, customerPhone: phone }); } catch(e) {}\n'
+      + '      setTimeout(function () { handleSuccessRedirect(order, selectedPayment); }, 800);\n'
+      + '    } catch (err) {\n'
+      + '      console.error("SCALEV ERROR:", err, err.data);\n'
+      + '      var errMsg = err.message || "Terjadi kesalahan";\n'
+      + '      if (errMsg.toLowerCase().includes("duplicate")) { showToast("Scalev menolak: Duplicate Order. " + (err.data ? JSON.stringify(err.data) : ""), "error"); }\n'
+      + '      else { showToast(errMsg); }\n'
+      + '      isSubmitting = false; button.disabled = false; button.textContent = "\\uD83E\\uDD32 Donasi Sekarang";\n'
+      + '    }\n'
+      + '  }\n'
+      + '})();\n';
+
+    // ── Assemble HTML ──
+    // Back button: use onclick for reliable navigation in Scalev iframe
+    var backBtnHtml = backUrl.indexOf('javascript:') === 0
+      ? '<button type="button" class="back-btn" title="Kembali" onclick="history.back();">'
+      : '<a href="' + escAttr(backUrl) + '" class="back-btn" title="Kembali">';
+    var backBtnClose = backUrl.indexOf('javascript:') === 0 ? '</button>' : '</a>';
+
+    var html = '<!doctype html>\n<html lang="id">\n<head>\n'
+      + '  <meta charset="utf-8" />\n'
+      + '  <meta name="viewport" content="width=device-width, initial-scale=1" />\n'
+      + '  <title>' + escHTML(data.pageTitle || headline) + '</title>\n'
+      + '  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />\n'
+      + '  <style>\n' + cssBlock + '  </style>\n'
+      + '</head>\n<body>\n\n'
+      + '<div class="page-wrap">\n\n'
+      + '  <div class="checkout-header">\n'
+      + '    ' + backBtnHtml + '\n'
+      + '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>\n'
+      + '    ' + backBtnClose + '\n'
+      + '    <h1 id="header-title">' + escHTML(headline) + '</h1>\n'
+      + '  </div>\n\n'
+      + '  <div class="campaign-info">\n'
+      + '    <div class="campaign-thumb"><img src="' + escAttr(thumbImg) + '" alt="Campaign" onerror="this.parentElement.style.background=\'linear-gradient(135deg,#e5e7eb,#d1d5db)\';this.style.display=\'none\';" /></div>\n'
+      + '    <div class="campaign-meta">\n'
+      + '      <div class="label">Anda akan berdonasi dalam program</div>\n'
+      + '      <div class="title" id="campaign-title">' + escHTML(headline) + '</div>\n'
+      + '    </div>\n'
+      + '  </div>\n\n'
+      + '  <div class="section">\n'
+      + '    <div class="section-label"><span class="icon">\uD83D\uDCB0</span> Pilih Nominal Donasi</div>\n'
+      + '    <div class="nominal-grid" id="nominal-grid">\n'
+      + nominalBtnsHTML
+      + '    </div>\n'
+      + '  </div>\n\n'
+      + '  <div class="section">\n'
+      + '    <div class="section-label"><span class="icon">\uD83C\uDFE6</span> Metode Pembayaran</div>\n'
+      + '    <button type="button" class="payment-btn" id="btn-payment-selector">\n'
+      + '      <div class="payment-btn-content">\n'
+      + '        <div id="selected-pay-icon"><div class="payment-icon default"><svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div></div>\n'
+      + '        <span class="payment-name" id="selected-pay-name" style="color:#9ca3af;">Pilih Metode Pembayaran...</span>\n'
+      + '      </div>\n'
+      + '      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>\n'
+      + '    </button>\n'
+      + '    <input type="hidden" id="inp-payment-method" value="" />\n'
+      + '  </div>\n\n'
+      + '  <form id="checkout-form">\n'
+      + '    <div class="section">\n'
+      + '      <div class="section-label"><span class="icon">\uD83D\uDCDD</span> Data Diri</div>\n'
+      + '      <div class="form-group"><div class="sapaan-row"><span class="label-text">Sapaan :</span><button type="button" class="sapaan-btn active" data-sapaan="Bu">Bu</button><button type="button" class="sapaan-btn" data-sapaan="Bunda">Bunda</button><button type="button" class="sapaan-btn" data-sapaan="Pak">Pak</button><button type="button" class="sapaan-btn" data-sapaan="Kak">Kak</button></div><input type="hidden" name="sapaan" id="inp-sapaan" value="Bu" /></div>\n'
+      + '      <div class="form-group"><input class="form-input" type="text" name="customerName" id="inp-name" placeholder="Nama Lengkap" required /></div>\n'
+      + '      <div class="anon-row"><span class="anon-label">Sembunyikan nama saya (Orang Baik)</span><label class="toggle-switch"><input type="checkbox" id="inp-anon" /><span class="toggle-slider"></span></label></div>\n'
+      + '      <div class="form-group"><input class="form-input" type="tel" name="customerPhone" id="inp-phone" placeholder="No Whatsapp atau Handphone" required /></div>\n'
+      + '      <div class="form-group"><input class="form-input" type="text" name="atasNama" id="inp-atas-nama" placeholder="Infaq Atas Nama Orang Tua (opsional)" /></div>\n'
+      + '      <div class="form-group"><textarea class="form-input" name="doa" id="inp-doa" placeholder="Tuliskan pesan atau doa disini (optional)" rows="3"></textarea></div>\n'
+      + '    </div>\n'
+      + '  </form>\n\n'
+      + '</div>\n\n'
+      + '<div class="sticky-submit"><div class="sticky-submit-inner"><div class="submit-total"><div class="total-label">Total Donasi</div><div class="total-amount" id="total-display">Rp 0</div></div><button class="btn-submit" id="btn-submit" type="button">\uD83E\uDD32 Donasi Sekarang</button></div></div>\n\n'
+      + '<div class="pay-modal-overlay" id="payModal"><div class="pay-modal"><div class="pay-modal-header"><h3>Pilih Pembayaran</h3><button class="pay-close-btn" onclick="document.getElementById(\'payModal\').classList.remove(\'show\')">\u00d7</button></div><div class="pay-modal-body" id="pay-list-container"><div style="text-align:center;padding:20px;color:#6b7280;font-size:0.85rem;">Memuat daftar pembayaran...</div></div></div></div>\n\n'
+      + '<div class="toast" id="toast"></div>\n\n'
+      + '<script>\n' + jsBlock + '</' + 'script>\n\n'
+      + '</body>\n</html>';
+
+    return html;
+  }
+
+
+  function escHTML(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function escAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ── Render Preview ──
+  var debounceTimer;
+  function renderPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      var frame = $('previewFrame');
+      var html = buildHTML();
+      frame.srcdoc = html;
+    }, 250);
+  }
+
+  // ── Download ──
+  var _pendingDownloadHTML = null;
+
+  function downloadHTML() {
+    _pendingDownloadHTML = buildHTML();
+    // Auto-suggest filename from title
+    var title = val('inp-title') || 'campaign-page';
+    var suggested = title.toLowerCase().replace(/[^a-z0-9\u00C0-\u024F\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 60) || 'campaign-page';
+    $('renameInput').value = suggested;
+    $('renameModal').classList.add('show');
+    setTimeout(function () {
+      var inp = $('renameInput');
+      inp.focus();
+      inp.select();
+    }, 50);
+  }
+  window.downloadHTML = downloadHTML;
+
+  function closeRenameModal() {
+    $('renameModal').classList.remove('show');
+    _pendingDownloadHTML = null;
+  }
+  window.closeRenameModal = closeRenameModal;
+
+  function confirmDownload() {
+    var name = $('renameInput').value.trim() || 'campaign-page';
+    // Sanitize: hanya alfanumerik, strip, spasi → strip
+    name = name.replace(/[\\/|:*?"<>]/g, '').trim().replace(/\s+/g, '-') || 'campaign-page';
+    var filename = name.endsWith('.html') ? name : name + '.html';
+    var html = _pendingDownloadHTML || buildHTML();
+    var blob = new Blob([html], { type: 'text/html' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    closeRenameModal();
+    showToast('✅ ' + filename + ' berhasil di-download!');
+  }
+  window.confirmDownload = confirmDownload;
+
+  // ── Copy ──
+  function copyHTML() {
+    var html = buildHTML();
+    navigator.clipboard.writeText(html).then(function () {
+      showToast('📋 HTML berhasil di-copy ke clipboard!');
+    }).catch(function () {
+      // Fallback
+      var ta = document.createElement('textarea');
+      ta.value = html;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('📋 HTML berhasil di-copy ke clipboard!');
+    });
+  }
+  window.copyHTML = copyHTML;
+
+  // ── Reset ──
+  function resetAll() {
+    if (!confirm('Apakah Anda yakin ingin mereset semua perubahan ke template bawaan?')) return;
+    location.reload();
+  }
+  window.resetAll = resetAll;
+
+  // ── Import HTML ──
+  function handleImport(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var text = e.target.result;
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(text, 'text/html');
+      var dataScript = doc.getElementById('campaign-data');
+      if (!dataScript) {
+        showToast('⚠️ File tidak dikenali (bukan dari generator ini)');
+        event.target.value = '';
+        return;
+      }
+      try {
+        var data = JSON.parse(dataScript.textContent);
+        // Restore template selector
+        var tplSelect = $('inp-template');
+        if (tplSelect && data.template !== undefined) {
+          tplSelect.value = data.template;
+          var kbSection = $('section-kitabisa');
+          var coSection = $('section-checkout');
+          if (kbSection) kbSection.style.display = data.template === 'kitabisa' ? '' : 'none';
+          if (coSection) coSection.style.display = data.template === 'checkout' ? '' : 'none';
+        }
+        // Restore color pickers
+        var colorMap = [['green','green'],['green-dark','greenDark'],['green-light','greenLight'],['text','text'],['muted','muted'],['bg','bg'],['border','border']];
+        colorMap.forEach(function (pair) {
+          var inp = document.querySelector('[data-var="' + pair[0] + '"]');
+          if (inp && data[pair[1]]) {
+            inp.value = data[pair[1]];
+            var hexSpan = inp.nextElementSibling;
+            if (hexSpan && hexSpan.classList.contains('hex-val')) hexSpan.textContent = data[pair[1]];
+          }
+        });
+        // Restore text / URL / number inputs
+        var fieldMap = [['inp-hero-img','heroImg'],['inp-avatar-img','avatarImg'],['inp-location','location'],['inp-title','title'],['inp-cta-text','ctaText'],['inp-cta-url','ctaUrl'],['inp-fund-name','fundName'],['inp-fund-link','fundLink'],['inp-fund-verified','fundVerified'],['inp-page-title','pageTitle'],['inp-target-donasi','targetDonasi'],['inp-dana-terkumpul','danaTerkumpul'],['inp-jumlah-donatur','jumlahDonatur']];
+        fieldMap.forEach(function (pair) {
+          var el = $(pair[0]);
+          if (el && data[pair[1]] !== undefined) el.value = data[pair[1]];
+        });
+        // Restore CTA emoji
+        var emojiInput = $('inp-cta-emoji');
+        if (emojiInput && data.ctaEmoji !== undefined) {
+          emojiInput.value = data.ctaEmoji;
+          document.querySelectorAll('#cta-emoji-picker .emoji-pick-btn').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-emoji') === data.ctaEmoji);
+          });
+        }
+        // Restore narasi
+        var editor = $('rteEditor');
+        if (editor && data.narasiHTML !== undefined) editor.innerHTML = data.narasiHTML;
+        // Restore checkout-specific fields
+        var checkoutFields = [['inp-checkout-headline','checkoutHeadline'],['inp-back-url','backUrl'],['inp-checkout-thumb','thumbImg']];
+        checkoutFields.forEach(function(pair) {
+          var el = $(pair[0]);
+          if (el && data[pair[1]] !== undefined) el.value = data[pair[1]];
+        });
+        // Restore nominals
+        if (data.nominals && Array.isArray(data.nominals)) {
+          $('nominal-list-container').innerHTML = '';
+          data.nominals.forEach(function(n) { addNominalRow(n.amount, n.emoji, n.sub); });
+        }
+        renderPreview();
+        showToast('✅ File berhasil di-load!');
+      } catch (err) {
+        showToast('⚠️ Gagal membaca data dari file');
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+  window.handleImport = handleImport;
+
+  // Color pickers (sidebar theme colors only)
+  document.querySelectorAll('.color-row input[type="color"]').forEach(function (inp) {
+    inp.addEventListener('input', function () {
+      this.parentElement.querySelector('.hex-val').textContent = this.value;
+      renderPreview();
+    });
+  });
+
+  // Text / URL inputs
+  document.querySelectorAll('.sidebar input[type="text"], .sidebar input[type="url"], .sidebar textarea').forEach(function (inp) {
+    inp.addEventListener('input', renderPreview);
+  });
+
+  // Template selector
+  var templateSelect = $('inp-template');
+  if (templateSelect) {
+    templateSelect.addEventListener('change', function () {
+      var tpl = this.value;
+      var secKitabisa = $('section-kitabisa');
+      var secCheckout = $('section-checkout');
+      if (secKitabisa) secKitabisa.style.display = tpl === 'kitabisa' ? '' : 'none';
+      if (secCheckout) secCheckout.style.display = tpl === 'checkout' ? '' : 'none';
+      renderPreview();
+    });
+  }
+
+  // ── Rich Text Editor ──
+  var editor = $('rteEditor');
+
+  function rteCmd(cmd, val) {
+    editor.focus();
+    document.execCommand(cmd, false, val || null);
+    renderPreview();
+  }
+
+  // Toolbar buttons
+  $('rteBold').addEventListener('click', function () { rteCmd('bold'); });
+  $('rteItalic').addEventListener('click', function () { rteCmd('italic'); });
+  $('rteUnderline').addEventListener('click', function () { rteCmd('underline'); });
+  $('rteUL').addEventListener('click', function () { rteCmd('insertUnorderedList'); });
+  $('rteOL').addEventListener('click', function () { rteCmd('insertOrderedList'); });
+  $('rteUndo').addEventListener('click', function () { rteCmd('undo'); });
+  $('rteRedo').addEventListener('click', function () { rteCmd('redo'); });
+
+  // Font
+  $('rteFont').addEventListener('change', function () {
+    rteCmd('fontName', this.value);
+  });
+
+  // Font size
+  $('rteFontSize').addEventListener('change', function () {
+    rteCmd('fontSize', this.value);
+  });
+
+  // Text color
+  $('rteColor').addEventListener('input', function () {
+    rteCmd('foreColor', this.value);
+  });
+
+  // Background/highlight color
+  $('rteBgColor').addEventListener('input', function () {
+    rteCmd('hiliteColor', this.value);
+  });
+
+  // Heading
+  $('rteHeading').addEventListener('change', function () {
+    if (this.value) {
+      rteCmd('formatBlock', this.value);
+    } else {
+      rteCmd('formatBlock', 'p');
+    }
+    this.value = '';
+  });
+
+  // Insert Image
+  $('rteImg').addEventListener('click', function () {
+    var url = prompt('Masukkan URL gambar:');
+    if (url && url.trim()) {
+      editor.focus();
+      document.execCommand('insertHTML', false, '<img src="' + url.trim() + '" alt="Gambar" style="width:100%;border-radius:10px;display:block;margin:10px 0;" onerror="this.style.display=\'none\'" />');
+      renderPreview();
+    }
+  });
+
+  // Clear highlight (hapus background color dari teks terpilih)
+  $('rteClearBg').addEventListener('click', function () {
+    editor.focus();
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    // Walk selected nodes and remove background-color
+    try {
+      var range = sel.getRangeAt(0);
+      var ancestor = range.commonAncestorContainer;
+      if (ancestor.nodeType === 3) ancestor = ancestor.parentNode;
+      function clearBg(node) {
+        if (node.nodeType === 1) {
+          if (node.style) {
+            node.style.backgroundColor = '';
+            node.style.background = '';
+            if (node.getAttribute('style') === '') node.removeAttribute('style');
+          }
+          Array.from(node.childNodes).forEach(clearBg);
+        }
+      }
+      // Also handle partial nodes at edges via execCommand fallback
+      document.execCommand('hiliteColor', false, 'transparent');
+      // Then walk to strip any residual
+      clearBg(ancestor);
+    } catch (e) {
+      try { document.execCommand('hiliteColor', false, 'transparent'); } catch (e2) {}
+    }
+    renderPreview();
+  });
+
+  // Insert steps box (Kotak Langkah)
+  $('rteInsertBox').addEventListener('click', function () {
+    var label = prompt('Teks judul kotak (contoh: Yuk, salurkan sedekah terbaikmu:)', 'Yuk, salurkan sedekah terbaikmu:');
+    if (label === null) return; // user cancel
+    var steps = [];
+    var n = 1;
+    while (true) {
+      var step = prompt('Langkah ke-' + n + ' (kosongkan untuk selesai):', n === 1 ? 'Klik DONASI SEKARANG' : '');
+      if (!step) break;
+      steps.push(step);
+      n++;
+      if (n > 10) break;
+    }
+    var stepsHTML = steps.map(function (s, i) {
+      // Bold kata pertama yang capslock atau yang setelah angka
+      return '<p>' + (i + 1) + '. ' + s + '</p>';
+    }).join('');
+    var html = '<div class="steps"><p>' + label.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' + stepsHTML + '</div>';
+    editor.focus();
+    document.execCommand('insertHTML', false, html);
+    renderPreview();
+  });
+
+  // CTA emoji picker
+  document.querySelectorAll('#cta-emoji-picker .emoji-pick-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#cta-emoji-picker .emoji-pick-btn').forEach(function (b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      $('inp-cta-emoji').value = this.dataset.emoji;
+      renderPreview();
+    });
+  });
+
+  // Listen for editor changes
+  editor.addEventListener('input', renderPreview);
+
+  // Strip formatting on paste — only insert plain text
+  editor.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+    renderPreview();
+  });
+
+  // Set default narasi content
+  editor.innerHTML = '<h2>PERBAIKI GIZI<br>GENERASI QUR\'ANI</h2>'
+    + '<p>Sedekah Anda Menguatkan Hafalan, Menjaga Kesehatan, dan Mencetak Penghafal Al-Qur\'an Masa Depan.</p>'
+    + '<p><strong>Gerakan Gizi Santri</strong> adalah program <strong>makan bergizi gratis 3 kali sehari</strong> bagi santri yatim dan penghafal Al-Qur\'an yang menempuh pendidikan. <strong>100% GRATIS</strong> selama 4 tahun dan tinggal penuh di kawasan Masjid Muslim Billionaire. Tanpa biaya asrama. Tanpa biaya makan. Tanpa biaya pendidikan.</p>'
+    + '<h3>MASALAH YANG KITA HADAPI</h3>'
+    + '<p>Banyak santri yatim penghafal Al-Qur\'an memiliki semangat luar biasa, namun menghadapi keterbatasan gizi.</p>'
+    + '<ul><li>\u274c Asupan makan tidak seimbang</li><li>\u274c Energi belajar menurun</li><li>\u274c Konsentrasi dan hafalan terganggu</li></ul>'
+    + '<div class="img-placeholder"><img src="https://dukung.masjidmuslimbillionaire.com/wp-content/uploads/2026/01/Image-LP-GGS-1.jpg" alt="Foto santri" style="width:100%;border-radius:10px;display:block;" onerror="this.style.display=\'none\'" /></div>'
+    + '<div class="highlight-section"><p><strong>Dengan terpenuhinya gizi santri, InsyaAllah mereka akan:</strong></p>'
+    + '<ul><li>\u2714\ufe0f Kebutuhan gizi tercukupi</li><li>\u2714\ufe0f Energi dan kesehatan terjaga</li><li>\u2714\ufe0f Fokus belajar meningkat</li><li>\u2714\ufe0f Hafalan Al-Qur\'an lebih kuat &amp; maksimal</li><li>\u2714\ufe0f Tumbuh menjadi generasi Qur\'ani yang berkualitas</li></ul>'
+    + '<p><em>Sedekah Anda bukan hanya memberi makan, tapi menguatkan masa depan mereka.</em></p></div>'
+    + '<h3>MENGAPA ANDA PERLU BERSEDEKAH DI PROGRAM INI?</h3>'
+    + '<div class="why-item"><strong>Pahala Jariyah yang Terus Mengalir</strong><span>Setiap ayat yang mereka hafalkan, pahalanya mengalir untuk Anda.</span></div>'
+    + '<div class="why-item"><strong>Ketenangan Batin &amp; Keberkahan Hidup</strong><span>Allah menjanjikan keberkahan bagi hamba-Nya yang mencintai Al-Qur\'an dan para penjaganya.</span></div>'
+    + '<div class="why-item"><strong>Transparan &amp; Amanah</strong><span>Dana disalurkan secara transparan dan dapat dipertanggungjawabkan.</span></div>'
+    + '<div class="why-item"><strong>Investasi Akhirat Nyata</strong><span>Anda menjadi bagian dalam membangun generasi Qur\'ani Indonesia.</span></div>'
+    + '<div class="img-placeholder"><img src="https://dukung.masjidmuslimbillionaire.com/wp-content/uploads/2026/03/Image-LP-GGS-2-1.jpg" alt="Foto kegiatan" style="width:100%;border-radius:10px;display:block;" onerror="this.style.display=\'none\'" /></div>'
+    + '<p>Alhamdulillah <strong>Masjid Muslim Billionaire</strong> telah 4 tahun konsisten menjalankan Gerakan Gizi Santri, lebih dari <strong>21 Pondok Pesantren</strong> terpenuhi kebutuhan gizi mereka.</p>'
+    + '<p><strong>Jangan Biarkan Santri Penghafal Al-Qur\'an Belajar dalam Keadaan Kekurangan Gizi.</strong></p>'
+    + '<p>Satu sedekah Anda hari ini, menjadi kekuatan hafalan mereka dan menjadi cahaya amal jariyah Anda di akhirat.</p>'
+    + '<div class="steps"><p>Yuk, salurkan sedekah terbaikmu:</p><p>1. Klik <strong>DONASI SEKARANG</strong></p><p>2. Masukkan nominal donasi</p><p>3. Pilih Metode Pembayaran</p><p>4. Segera transfer sesuai nominal.</p></div>'
+    + '<p>Tak hanya bersedekah, sahabat juga bisa menyebarkan lebih luas halaman ini ke kerabat serta keluarga terdekat.</p>'
+    + '<p><strong>Jazakumullah khairan katsiran #OrangBaik!</strong></p>'
+    + '<ul class="footnotes"><li>Donasi dari campaign ini akan dialokasikan untuk pangan para Santri, Sahabat Yatim Dan Dhuafa, Penghafal Al-Qur\'an.</li>'
+    + '<li>Laporan implementasi akan dikabarkan melalui instagram @gerakangizisantri.</li>'
+    + '<li>Dana juga akan digunakan untuk DPD (Dana Pengembangan Dakwah) dan kemaslahatan yang terkait dengannya.</li></ul>';
+
+  // Initialize default nominal rows
+  var defaultNominals = [
+    { amount: 50000, emoji: '\uD83D\uDC4F', sub: '' },
+    { amount: 100000, emoji: '\uD83D\uDC4F', sub: 'sering dipilih' },
+    { amount: 200000, emoji: '\uD83D\uDC4F', sub: '' },
+    { amount: 500000, emoji: '\uD83D\uDC9A', sub: '' },
+    { amount: 1000000, emoji: '\uD83C\uDF1F', sub: '' },
+    { amount: 2000000, emoji: '\uD83C\uDF1F', sub: '' },
+    { amount: 5000000, emoji: '\u2728', sub: '' }
+  ];
+  defaultNominals.forEach(function(n) { addNominalRow(n.amount, n.emoji, n.sub); });
+
+  // Initial render
+  renderPreview();
+
+  // Keyboard shortcuts for rename modal
+  document.getElementById('renameInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') confirmDownload();
+    if (e.key === 'Escape') closeRenameModal();
+  });
+  document.getElementById('renameModal').addEventListener('click', function (e) {
+    if (e.target === this) closeRenameModal();
+  });
+
+})();
+</script>
+
+</body>
+</html>
